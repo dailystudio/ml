@@ -4,8 +4,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -41,6 +43,17 @@ public class MainActivity extends AppCompatActivity {
                     .resetViewBeforeLoading(true)
                     .build();
 
+    private class InitializeModelAsyncTask extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            final boolean ret = DeeplabModel.initialize();
+            Logger.debug("initialize deeplab model: %s", ret);
+
+            return ret;
+        }
+
+    }
     private class SegmentImageAsyncTask extends AsyncTask<Context, Void, Bitmap> {
 
         private Uri mImageUri;
@@ -151,13 +164,33 @@ public class MainActivity extends AppCompatActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+
+        syncUIWithPermissions(true);
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
 
-        checkRequiredPermissions();
+        syncUIWithPermissions(false);
+    }
+
+    private void syncUIWithPermissions(boolean requestIfNeed) {
+        final boolean granted = checkRequiredPermissions(requestIfNeed);
+
+        setPickImageEnabled(granted);
+        if (granted && !DeeplabModel.isInitialized()) {
+            initModel();
+        }
     }
 
     private boolean checkRequiredPermissions() {
+        return checkRequiredPermissions(false);
+    }
+
+    private boolean checkRequiredPermissions(boolean requestIfNeed) {
         final boolean writeStoragePermGranted =
                 ContextCompat.checkSelfPermission(this,
                         Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -165,7 +198,8 @@ public class MainActivity extends AppCompatActivity {
 
         Logger.debug("storage permission granted: %s", writeStoragePermGranted);
 
-        if (!writeStoragePermGranted) {
+        if (!writeStoragePermGranted
+                && requestIfNeed) {
             requestRequiredPermissions();
         }
 
@@ -189,8 +223,17 @@ public class MainActivity extends AppCompatActivity {
                 ArrayUtils.intArrayToString(grantResults));
         if (requestCode == REQUEST_REQUIRED_PERMISSION) {
             if (grantResults.length > 0
-                    || grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                    Logger.debug("permission granted");
+                    && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                Logger.debug("permission granted, initialize model.");
+                initModel();
+
+                if (mFabPickImage != null) {
+                    mFabPickImage.setEnabled(true);
+                    mFabPickImage.setBackgroundTintList(
+                            ColorStateList.valueOf(getColor(R.color.colorAccent)));
+                }
+            } else {
+                Logger.debug("permission denied, disable fab.");
             }
         } else {
             super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -230,6 +273,20 @@ public class MainActivity extends AppCompatActivity {
             }
         } else {
             super.onActivityResult(requestCode, resultCode, data);
+        }
+    }
+
+    private void initModel() {
+        new InitializeModelAsyncTask().execute((Void)null);
+    }
+
+    private void setPickImageEnabled(boolean enabled) {
+        if (mFabPickImage != null) {
+            mFabPickImage.setEnabled(enabled);
+
+            int resId = enabled ? R.color.colorAccent : R.color.light_gray;
+            mFabPickImage.setBackgroundTintList(
+                    ColorStateList.valueOf(getColor(resId)));
         }
     }
 

@@ -38,6 +38,7 @@
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_pick_image"
         android:src="@drawable/ic_action_pick_image"
+        android:enabled="false"
         android:layout_gravity="end|bottom"
         android:layout_marginEnd="@dimen/fab_margin"
         android:layout_marginBottom="@dimen/fab_mini_margin_v"

@@ -29,7 +29,7 @@ public class DeeplabModel {
 
     private static TensorFlowInferenceInterface sTFInterface = null;
 
-    public static boolean initialize() {
+    public synchronized static boolean initialize() {
 
         final File graphPath = new File(MODEL_FILE);
 
@@ -69,8 +69,12 @@ public class DeeplabModel {
         return true;
     }
 
+    public synchronized static boolean isInitialized() {
+        return (sTFInterface != null);
+    }
 
-    public static Bitmap segment(final Bitmap bitmap) {
+
+    public synchronized static Bitmap segment(final Bitmap bitmap) {
         if (sTFInterface == null) {
             Logger.warn("tf model is NOT initialized.");
             return null;
