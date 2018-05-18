@@ -1,0 +1,7 @@
+<resources>
+
+    <dimen name="fab_margin">24dp</dimen>
+    <dimen name="fab_mini_margin_h">8dp</dimen>
+    <dimen name="fab_mini_margin_v">@dimen/fab_margin</dimen>
+
+</resources>

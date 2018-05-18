@@ -71,6 +71,11 @@ public class DeeplabModel {
 
 
     public static Bitmap segment(final Bitmap bitmap) {
+        if (sTFInterface == null) {
+            Logger.warn("tf model is NOT initialized.");
+            return null;
+        }
+
         if (bitmap == null) {
             return null;
         }

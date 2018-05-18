@@ -34,4 +34,9 @@ public class DeeplabApplication extends DevBricksApplication {
         }.execute((Void)null);
     }
 
+    @Override
+    protected boolean isDebugBuild() {
+        return BuildConfig.DEBUG;
+    }
+
 }
