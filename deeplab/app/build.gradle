@@ -72,8 +72,12 @@ dependencies {
     })
 
     implementation "com.facebook.stetho:stetho:${project.ext.stethoVersion}"
+
     implementation "com.nostra13.universalimageloader:universal-image-loader:${project.ext.imageLoaderVersion}"
+    implementation "com.yarolegovich:discrete-scrollview:${project.ext.discreteVersion}"
     implementation "com.github.dailystudio:devbricks:${project.ext.devbricksLibVersion}"
+    implementation "org.greenrobot:eventbus:${project.ext.eventBusVersion}"
+
     implementation "org.tensorflow:tensorflow-android:${project.ext.tfVersion}"
 
     annotationProcessor 'com.google.auto.value:auto-value:1.1'

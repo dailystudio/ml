@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-
+<!--
     <LinearLayout
         android:orientation="vertical"
         android:layout_width="match_parent"
@@ -34,8 +34,13 @@
             android:layout_width="match_parent"
             android:layout_height="0dp" />
 
-    </LinearLayout>
+    </LinearLayout>-->
 
+    <fragment
+        android:id="@+id/fragment_segment_bitmaps"
+        android:name="com.dailystudio.deeplab.SegmentBitmapsFragment"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/fab_pick_image"

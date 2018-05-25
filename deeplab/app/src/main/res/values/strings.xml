@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Deeplab Demo</string>
+
+    <string name="label_original">Original</string>
+    <string name="label_mask">Mask</string>
+    <string name="label_cropped">Cropped</string>
+
 </resources>
