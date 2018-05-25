@@ -4,5 +4,6 @@
     <string name="label_original">Original</string>
     <string name="label_mask">Mask</string>
     <string name="label_cropped">Cropped</string>
+    <string name="label_no_image_selected">No image selected</string>
 
 </resources>

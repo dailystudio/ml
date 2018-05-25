@@ -15,6 +15,13 @@
 
     </com.yarolegovich.discretescrollview.DiscreteScrollView>
 
+    <TextView
+        android:id="@android:id/empty"
+        style="@style/DefaultEmptyText"
+        android:text="@string/label_no_image_selected"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
+
     <include
         layout="@layout/layout_default_loading"
         android:layout_width="match_parent"

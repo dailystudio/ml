@@ -111,6 +111,7 @@ public class SegmentBitmapsFragment extends AbsArrayRecyclerViewFragment<Segment
 
     private void fastDisplayOrigin() {
         if (mRecyclerView != null) {
+            mRecyclerView.scrollToPosition(0);
             RecyclerView.Adapter adapter = mRecyclerView.getAdapter();
             if (adapter instanceof AbsArrayRecyclerAdapter) {
                 AbsArrayRecyclerAdapter bitmapsAdapter =
