@@ -109,13 +109,10 @@ public class DeeplabModel {
         }
 
         final long start = System.currentTimeMillis();
-        // Copy the input data into TensorFlow.
         sTFInterface.feed(INPUT_NAME, mFlatIntValues, 1, h, w, 3 );
 
-        // Run the inference call.
         sTFInterface.run(new String[] { OUTPUT_NAME }, true);
 
-        // Copy the output Tensor back into the output array.
         sTFInterface.fetch(OUTPUT_NAME, mOutputs);
         Logger.debug("outputs = %s", ArrayUtils.intArrayToString(mOutputs));
         final long end = System.currentTimeMillis();
@@ -125,7 +122,7 @@ public class DeeplabModel {
 
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                output.setPixel(x, y, mOutputs[y * w + x] == 0 ? Color.BLACK : Color.WHITE);
+                output.setPixel(x, y, mOutputs[y * w + x] == 0 ? Color.TRANSPARENT : Color.BLACK);
             }
         }
 

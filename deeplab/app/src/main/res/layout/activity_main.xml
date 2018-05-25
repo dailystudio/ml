@@ -2,6 +2,7 @@
 <android.support.design.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:background="@drawable/default_content_bg"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
@@ -13,21 +14,22 @@
 
         <ImageView
             android:id="@+id/src_img"
-            android:scaleType="centerCrop"
+            android:scaleType="centerInside"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="0dp" />
 
         <ImageView
             android:id="@+id/segment_img"
-            android:scaleType="centerCrop"
+            android:scaleType="fitCenter"
+            android:tint="@color/colorAccent"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="0dp" />
 
         <ImageView
-            android:id="@+id/overlay_img"
-            android:scaleType="centerCrop"
+            android:id="@+id/cropped_img"
+            android:scaleType="fitCenter"
             android:layout_weight="1"
             android:layout_width="match_parent"
             android:layout_height="0dp" />

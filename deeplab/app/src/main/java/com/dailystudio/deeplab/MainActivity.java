@@ -7,7 +7,10 @@ import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -23,6 +26,7 @@ import android.widget.ImageView;
 
 import com.dailystudio.app.utils.ActivityLauncher;
 import com.dailystudio.app.utils.ArrayUtils;
+import com.dailystudio.app.utils.BitmapUtils;
 import com.dailystudio.deeplab.ml.DeeplabModel;
 import com.dailystudio.deeplab.ml.ImageUtils;
 import com.dailystudio.deeplab.utils.FilePickUtils;
@@ -54,7 +58,14 @@ public class MainActivity extends AppCompatActivity {
         }
 
     }
-    private class SegmentImageAsyncTask extends AsyncTask<Context, Void, Bitmap> {
+
+    private class SegmentBitmaps {
+        private Bitmap original;
+        private Bitmap segment;
+        private Bitmap cropped;
+    }
+
+    private class SegmentImageAsyncTask extends AsyncTask<Context, Void, SegmentBitmaps> {
 
         private Uri mImageUri;
 
@@ -63,7 +74,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         @Override
-        protected Bitmap doInBackground(Context... contexts) {
+        protected SegmentBitmaps doInBackground(Context... contexts) {
             if (contexts == null
                     || contexts.length <= 0) {
                 return null;
@@ -85,6 +96,10 @@ public class MainActivity extends AppCompatActivity {
                 return null;
             }
 
+            SegmentBitmaps bitmaps = new SegmentBitmaps();
+
+            bitmaps.original = bitmap;
+
             final int w = bitmap.getWidth();
             final int h = bitmap.getHeight();
 
@@ -97,22 +112,63 @@ public class MainActivity extends AppCompatActivity {
 
             Bitmap resized = ImageUtils.tfResizeBilinear(bitmap, rw, rh);
 
-            return DeeplabModel.segment(resized);
+            bitmaps.segment = DeeplabModel.segment(resized);
+            if (bitmaps.segment != null) {
+                bitmaps.segment = BitmapUtils.scaleBitmap(bitmaps.segment, w, h);
+                bitmaps.cropped = cropBitmapWithMask(bitmaps.original, bitmaps.segment);
+            }
+
+            return bitmaps;
         }
 
         @Override
-        protected void onPostExecute(Bitmap bitmap) {
-            super.onPostExecute(bitmap);
+        protected void onPostExecute(SegmentBitmaps bitmaps) {
+            super.onPostExecute(bitmaps);
+
+            if (bitmaps == null) {
+                return;
+            }
 
             if (mSegmentImageView != null) {
-                mSegmentImageView.setImageBitmap(bitmap);
+                mSegmentImageView.setImageBitmap(bitmaps.segment);
+            }
+
+            if (mCroppedImageView != null) {
+                mCroppedImageView.setImageBitmap(bitmaps.cropped);
             }
         }
+
+        private Bitmap cropBitmapWithMask(Bitmap original, Bitmap mask) {
+            if (original == null
+                    || mask == null) {
+                return null;
+            }
+
+            final int w = original.getWidth();
+            final int h = original.getHeight();
+            if (w <= 0 || h <= 0) {
+                return null;
+            }
+
+            Bitmap cropped = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
+
+
+            Canvas canvas = new Canvas(cropped);
+            Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
+            paint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.DST_IN));
+            canvas.drawBitmap(original, 0, 0, null);
+            canvas.drawBitmap(mask, 0, 0, paint);
+            paint.setXfermode(null);
+
+            return cropped;
+        }
+
     }
 
     private ImageView mSrcImageView;
     private ImageView mSegmentImageView;
-    private ImageView mOverlayImageView;
+    private ImageView mCroppedImageView;
 
     private FloatingActionButton mFabPickImage;
 
@@ -160,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         mSegmentImageView = findViewById(R.id.segment_img);
-        mOverlayImageView = findViewById(R.id.overlay_img);
+        mCroppedImageView = findViewById(R.id.cropped_img);
     }
 
     @Override
@@ -267,6 +323,10 @@ public class MainActivity extends AppCompatActivity {
 
                 if (mSegmentImageView != null) {
                     mSegmentImageView.setImageBitmap(null);
+                }
+
+                if (mCroppedImageView != null) {
+                    mCroppedImageView.setImageBitmap(null);
                 }
 
                 new SegmentImageAsyncTask(pickedImageUri).execute(getApplicationContext());
