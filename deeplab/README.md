@@ -1,8 +1,9 @@
-### DeepLab on mobile
+# DeepLab on Android
 DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image. Here is mobile version running on Android devices.
 
 
-####Preparing the models
+##Preparing the models
+
 Before running the demo on Android device, you need to prepare a DeepLab inference model for mobile device.
 
 1. Clone the DeepLab model source code from TensorFlow modal repository:
@@ -56,7 +57,7 @@ python export_model.py \
 A new generated frozen graph for TensorFlow Mobile is under current directory.
 
 
-####Running the demo
+# Running the demo
 
 1. Push the model to the device:
 ```bash
@@ -67,4 +68,8 @@ Anyway, the final inference model should be here:
 > /sdcard/deeplab/frozen_inference_graph.pb
 
 2. Run the demo, here is demo screen recording.
-<img src=".github/deeplab_demo.gif" width="280" height="498" alt="DeepLab Demo"/>
+<img src="/.github/deeplab_demo.gif" width="280" height="498" alt="DeepLab Demo"/>
+
+## License
+
+[Apache License 2.0](LICENSE)
