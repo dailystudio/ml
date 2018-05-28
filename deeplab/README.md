@@ -73,3 +73,26 @@ Anyway, the final inference model should be here:
 ## License
 
 [Apache License 2.0](LICENSE)
+
+## Attributions/Thanks
+- DeepLabv3+:
+```
+@article{deeplabv3plus2018,
+  title={Encoder-Decoder with Atrous Separable Convolution for Semantic Image Segmentation},
+  author={Liang-Chieh Chen and Yukun Zhu and George Papandreou and Florian Schroff and Hartwig Adam},
+  journal={arXiv:1802.02611},
+  year={2018}
+}
+```
+
+- MobileNetv2:
+
+```
+@inproceedings{mobilenetv22018,
+  title={Inverted Residuals and Linear Bottlenecks: Mobile Networks for Classification, Detection and Segmentation},
+  author={Mark Sandler and Andrew Howard and Menglong Zhu and Andrey Zhmoginov and Liang-Chieh Chen},
+  booktitle={CVPR},
+  year={2018}
+}
+```
+- Without the advice given by [Liang-Chieh Chen](https://github.com/aquariusjay), we cannot successfully export the model on mobile devices.
