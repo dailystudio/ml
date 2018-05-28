@@ -67,4 +67,4 @@ Anyway, the final inference model should be here:
 > /sdcard/deeplab/frozen_inference_graph.pb
 
 2. Run the demo, here is demo screen recording.
-<img src="/.github/deeplab_demo.gif" width="280" height="498" alt="DeepLab Demo"/>
+<img src=".github/deeplab_demo.gif" width="280" height="498" alt="DeepLab Demo"/>
