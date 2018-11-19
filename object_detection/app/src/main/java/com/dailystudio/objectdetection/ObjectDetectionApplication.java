@@ -3,7 +3,7 @@ package com.dailystudio.objectdetection;
 import com.dailystudio.app.DevBricksApplication;
 import com.facebook.stetho.Stetho;
 
-public class ObejctDetectionApplication extends DevBricksApplication {
+public class ObjectDetectionApplication extends DevBricksApplication {
 
 
     @Override
@@ -13,8 +13,6 @@ public class ObejctDetectionApplication extends DevBricksApplication {
         if (BuildConfig.USE_STETHO) {
             Stetho.initializeWithDefaults(this);
         }
-
-        new DetectAsyncTask("/sdcard/detect_input.jpg").execute(this);
     }
 
     @Override

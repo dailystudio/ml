@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Object Detection</string>
+    <string name="app_name_release">Object Detection</string>
+    <string name="app_name_debug">Object Detection (Debug)</string>
 </resources>

@@ -39,14 +39,30 @@ android {
             signingConfig signingConfigs.release
 
             buildConfigField "boolean","USE_STETHO","false"
+
+            resValue "string", "app_name", "@string/app_name_release"
+        }
+
+        releaseUsigned {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            buildConfigField "boolean","USE_STETHO","false"
+
+            resValue "string", "app_name", "@string/app_name_release"
         }
 
         debug {
+            applicationIdSuffix '.dev'
+
             debuggable true
             signingConfig signingConfigs.debug
             versionNameSuffix " (DEBUG)"
 
             buildConfigField "boolean","USE_STETHO","true"
+
+            resValue "string", "app_name", "@string/app_name_debug"
         }
     }
 
@@ -72,11 +88,11 @@ dependencies {
     })
 
     implementation "com.facebook.stetho:stetho:${project.ext.stethoVersion}"
-
     implementation "com.nostra13.universalimageloader:universal-image-loader:${project.ext.imageLoaderVersion}"
     implementation "com.yarolegovich:discrete-scrollview:${project.ext.discreteVersion}"
     implementation "com.github.dailystudio:devbricks:${project.ext.devbricksLibVersion}"
     implementation "org.greenrobot:eventbus:${project.ext.eventBusVersion}"
+    implementation "com.yarolegovich:discrete-scrollview:${project.ext.discreteVersion}"
 
 //    implementation "org.tensorflow:tensorflow-android:${project.ext.tfVersion}"
     implementation "org.tensorflow:tensorflow-lite:${project.ext.tfliteVersion}"

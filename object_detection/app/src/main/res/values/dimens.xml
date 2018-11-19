@@ -1,0 +1,13 @@
+<resources>
+
+    <dimen name="fab_margin">24dp</dimen>
+    <dimen name="fab_mini_margin_h">8dp</dimen>
+    <dimen name="fab_mini_margin_v">@dimen/fab_margin</dimen>
+
+    <dimen name="image_width_v">320dp</dimen>
+    <dimen name="image_height_v">550dp</dimen>
+
+    <dimen name="image_width_h">380dp</dimen>
+    <dimen name="image_height_h">240dp</dimen>
+
+</resources>
