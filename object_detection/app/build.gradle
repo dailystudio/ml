@@ -1,0 +1,85 @@
+apply plugin: 'com.android.application'
+
+android {
+    compileSdkVersion Integer.parseInt(androidCompileSdkVersion)
+    buildToolsVersion androidBuildToolsVersion
+
+    defaultConfig {
+        applicationId "com.dailystudio.objectdetection"
+        minSdkVersion Integer.parseInt(androidMinSdkVersion)
+        targetSdkVersion Integer.parseInt(androidTargetSdkVersion)
+        versionCode Integer.parseInt(appVersionCode)
+        versionName appVersion
+    }
+
+    signingConfigs {
+
+        release {
+            storeFile file(RELEASE_STORE_FILE)
+            storePassword RELEASE_STORE_PASSWORD
+            keyAlias RELEASE_KEY_ALIAS
+            keyPassword RELEASE_KEY_PASSWORD
+        }
+
+        debug {
+            storeFile file(DEBUG_STORE_FILE)
+            storePassword DEBUG_STORE_PASSWORD
+            keyAlias DEBUG_KEY_ALIAS
+            keyPassword DEBUG_KEY_PASSWORD
+        }
+
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled true
+            shrinkResources true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+
+            signingConfig signingConfigs.release
+
+            buildConfigField "boolean","USE_STETHO","false"
+        }
+
+        debug {
+            debuggable true
+            signingConfig signingConfigs.debug
+            versionNameSuffix " (DEBUG)"
+
+            buildConfigField "boolean","USE_STETHO","true"
+        }
+    }
+
+    aaptOptions {
+        noCompress "tflite"
+    }
+
+    lintOptions {
+        abortOnError false
+    }
+}
+
+repositories {
+    google()
+    jcenter()
+}
+
+dependencies {
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    testImplementation 'junit:junit:4.12'
+    androidTestImplementation('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+
+    implementation "com.facebook.stetho:stetho:${project.ext.stethoVersion}"
+
+    implementation "com.nostra13.universalimageloader:universal-image-loader:${project.ext.imageLoaderVersion}"
+    implementation "com.yarolegovich:discrete-scrollview:${project.ext.discreteVersion}"
+    implementation "com.github.dailystudio:devbricks:${project.ext.devbricksLibVersion}"
+    implementation "org.greenrobot:eventbus:${project.ext.eventBusVersion}"
+
+//    implementation "org.tensorflow:tensorflow-android:${project.ext.tfVersion}"
+    implementation "org.tensorflow:tensorflow-lite:${project.ext.tfliteVersion}"
+
+    annotationProcessor 'com.google.auto.value:auto-value:1.1'
+}
