@@ -12,16 +12,26 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.View;
+import android.widget.ImageView;
 
 import com.dailystudio.app.activity.ActionBarFragmentActivity;
 import com.dailystudio.app.utils.ActivityLauncher;
 import com.dailystudio.app.utils.ArrayUtils;
 import com.dailystudio.development.Logger;
 import com.dailystudio.objectdetection.api.ObjectDetectionModel;
+import com.dailystudio.objectdetection.database.DetectedImage;
+import com.dailystudio.objectdetection.fragment.DetectedImagesFragment;
+import com.dailystudio.objectdetection.ui.ImageSelectedEvent;
 import com.dailystudio.objectdetection.utils.FilePickUtils;
+import com.nostra13.universalimageloader.core.ImageLoader;
+
+import org.greenrobot.eventbus.EventBus;
+import org.greenrobot.eventbus.Subscribe;
+import org.greenrobot.eventbus.ThreadMode;
 
 public class MainActivity extends ActionBarFragmentActivity {
 
@@ -51,6 +61,7 @@ public class MainActivity extends ActionBarFragmentActivity {
     }
 
     private FloatingActionButton mFabPickImage;
+    private ImageView mSelectedImagePreview;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,6 +73,8 @@ public class MainActivity extends ActionBarFragmentActivity {
     }
 
     private void setupViews() {
+        mSelectedImagePreview = findViewById(R.id.selected_preview);
+
         mFabPickImage = findViewById(R.id.fab_pick_image);
         if (mFabPickImage != null) {
             mFabPickImage.setOnClickListener(new View.OnClickListener() {
@@ -96,14 +109,20 @@ public class MainActivity extends ActionBarFragmentActivity {
     protected void onStart() {
         super.onStart();
 
+        if (!EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().register(this);
+        }
+
         syncUIWithPermissions(true);
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
+    protected void onDestroy() {
+        super.onDestroy();
 
-        syncUIWithPermissions(false);
+        if (EventBus.getDefault().isRegistered(this)) {
+            EventBus.getDefault().unregister(this);
+        }
     }
 
     private void syncUIWithPermissions(boolean requestIfNeed) {
@@ -215,6 +234,27 @@ public class MainActivity extends ActionBarFragmentActivity {
             int resId = enabled ? R.color.colorAccent : R.color.light_gray;
             mFabPickImage.setBackgroundTintList(
                     ColorStateList.valueOf(getColor(resId)));
+        }
+    }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onImageSelectedEvent(ImageSelectedEvent event) {
+        Fragment fragment = findFragment(R.id.fragment_detected_images);
+
+        if (fragment instanceof DetectedImagesFragment == false) {
+            return;
+        }
+
+        DetectedImage styledImage = ((DetectedImagesFragment)fragment).getImageOnPosition(
+                event.selectedPosition);
+
+        Logger.debug("selected image: %s", styledImage);
+        if (mSelectedImagePreview != null
+                && styledImage != null) {
+            ImageLoader.getInstance().displayImage(
+                    "file://" + styledImage.getDetectedPath(),
+                    mSelectedImagePreview,
+                    Constants.PREVIEW_IMAGE_LOADER_OPTIONS);
         }
     }
 

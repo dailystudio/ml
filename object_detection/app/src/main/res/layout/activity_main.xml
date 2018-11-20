@@ -7,6 +7,13 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+    <ImageView
+        android:id="@+id/selected_preview"
+        android:alpha="0.1"
+        android:scaleType="centerCrop"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
     <fragment
         android:name="com.dailystudio.objectdetection.fragment.DetectedImagesFragment"
         android:id="@+id/fragment_detected_images"

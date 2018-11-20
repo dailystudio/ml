@@ -87,6 +87,9 @@ public class DetectedImageViewHolder extends AbsArrayItemViewHolder<DetectedImag
 
         final String styledPath = image.getDetectedPath();
 
+        if (mShareView != null) {
+            mShareView.setTag(image);
+        }
 
         if (mStyledThumb != null) {
             ImageLoader.getInstance().displayImage(
