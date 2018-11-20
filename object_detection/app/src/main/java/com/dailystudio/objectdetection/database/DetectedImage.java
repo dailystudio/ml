@@ -60,7 +60,7 @@ public class DetectedImage extends TimeCapsule {
         setValue(COLUMN_DETECTED, styledPath);
     }
 
-    public String getStyledPath() {
+    public String getDetectedPath() {
         return getTextValue(COLUMN_DETECTED);
     }
 
@@ -93,7 +93,7 @@ public class DetectedImage extends TimeCapsule {
                 getClass().getSimpleName(),
                 hashCode(),
                 getSourcePath(),
-                getStyledPath(),
+                getDetectedPath(),
                 getOrientation());
     }
 

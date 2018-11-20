@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.view.View;
@@ -21,6 +20,7 @@ import com.dailystudio.app.activity.ActionBarFragmentActivity;
 import com.dailystudio.app.utils.ActivityLauncher;
 import com.dailystudio.app.utils.ArrayUtils;
 import com.dailystudio.development.Logger;
+import com.dailystudio.objectdetection.api.ObjectDetectionModel;
 import com.dailystudio.objectdetection.utils.FilePickUtils;
 
 public class MainActivity extends ActionBarFragmentActivity {

@@ -1,4 +1,4 @@
-package com.dailystudio.objectdetection;
+package com.dailystudio.objectdetection.api;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -7,8 +7,6 @@ import android.graphics.Matrix;
 import android.graphics.RectF;
 
 import com.dailystudio.development.Logger;
-import com.dailystudio.objectdetection.api.Classifier;
-import com.dailystudio.objectdetection.api.TFLiteObjectDetectionAPIModel;
 import com.dailystudio.objectdetection.utils.ImageUtils;
 
 import java.io.IOException;
@@ -22,6 +20,7 @@ public class ObjectDetectionModel {
     private static final boolean TF_OD_API_IS_QUANTIZED = true;
     private static final String TF_OD_API_MODEL_FILE = "detect.tflite";
     private static final String TF_OD_API_LABELS_FILE = "file:///android_asset/coco_labels_list.txt";
+
     private static final float MINIMUM_CONFIDENCE_TF_OD_API = 0.6f;
 
     private static Classifier sDetector = null;
@@ -66,8 +65,17 @@ public class ObjectDetectionModel {
     }
 
     public static List<Classifier.Recognition> detectImage(Bitmap bitmap) {
+        return detectImage(bitmap, 0);
+    }
+
+    public static List<Classifier.Recognition> detectImage(Bitmap bitmap, float minimumConfidence) {
         if (bitmap == null) {
             return null;
+        }
+
+        if (minimumConfidence <= 0
+                || minimumConfidence > 1) {
+            minimumConfidence = MINIMUM_CONFIDENCE_TF_OD_API;
         }
 
         if (!ObjectDetectionModel.isInitialized()) {
@@ -98,7 +106,7 @@ public class ObjectDetectionModel {
 
         for (final Classifier.Recognition recognition: results) {
             final RectF loc = recognition.getLocation();
-            if (loc != null && recognition.getConfidence() >= MINIMUM_CONFIDENCE_TF_OD_API) {
+            if (loc != null && recognition.getConfidence() >= minimumConfidence) {
                 cropToFrameTransform.mapRect(loc);
                 recognition.setLocation(loc);
                 mappedRecognitions.add(recognition);

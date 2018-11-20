@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name_release">Object Detection</string>
     <string name="app_name_debug">Object Detection (Debug)</string>
+
+    <string name="prompt_paint_share">I\'m sharing the detected image with you.</string>
+
+
 </resources>

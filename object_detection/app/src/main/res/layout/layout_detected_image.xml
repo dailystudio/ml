@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/item_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <android.support.v7.widget.CardView
+        style="@style/DefaultCardView"
+        android:id="@+id/image_card"
+        android:clickable="true"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:background="@color/white"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content">
+
+            <ImageView
+                android:id="@+id/detected_thumb"
+                android:scaleType="centerCrop"
+                android:layout_centerHorizontal="true"
+                android:layout_width="@dimen/thumb_width"
+                android:layout_height="@dimen/thumb_height" />
+
+            <RelativeLayout
+                android:layout_alignStart="@id/detected_thumb"
+                android:layout_alignEnd="@id/detected_thumb"
+                android:layout_alignParentBottom="true"
+                android:padding="@dimen/card_action_padding"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <ImageView
+                    android:id="@+id/share_image"
+                    android:src="@drawable/ic_action_share"
+                    android:layout_alignParentEnd="true"
+                    android:layout_width="@dimen/card_action_size"
+                    android:layout_height="@dimen/card_action_size" />
+
+            </RelativeLayout>
+
+        </RelativeLayout>
+
+    </android.support.v7.widget.CardView>
+
+</FrameLayout>
