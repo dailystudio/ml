@@ -10,6 +10,7 @@ import android.graphics.RectF;
 import android.os.AsyncTask;
 
 import com.dailystudio.app.utils.BitmapUtils;
+import com.dailystudio.app.utils.TextUtils;
 import com.dailystudio.development.Logger;
 import com.dailystudio.objectdetection.api.Classifier;
 import com.dailystudio.objectdetection.api.ObjectDetectionModel;
@@ -115,24 +116,88 @@ public class DetectAsyncTask extends AsyncTask<Context, Void, List<Classifier.Re
         }
 
         Bitmap taggedBitmap = origBitmap.copy(Bitmap.Config.ARGB_8888, true);
+        final int width = taggedBitmap.getWidth();
+        final int height = taggedBitmap.getHeight();
 
         final Canvas canvas = new Canvas(taggedBitmap);
-        final Paint paint = new Paint();
-        paint.setStyle(Paint.Style.STROKE);
-        paint.setStrokeWidth(20.0f);
 
+        final int corner = res.getDimensionPixelSize(R.dimen.detect_info_round_corner);
+
+        final int N = recognitions.size();
         int colorIndex = 0;
-        for (final Classifier.Recognition r : recognitions) {
-            paint.setColor(res.getColor(FRAME_COLORS[colorIndex],
+
+        final Paint framePaint = new Paint();
+        framePaint.setStyle(Paint.Style.STROKE);
+        framePaint.setStrokeWidth(20.0f);
+
+        Classifier.Recognition r;
+        for (int i = 0; i < N; i++) {
+            r = recognitions.get(i);
+            framePaint.setColor(res.getColor(FRAME_COLORS[colorIndex],
                     context.getTheme()));
 
             final RectF location = r.getLocation();
-            canvas.drawRect(location, paint);
+            canvas.drawRoundRect(location, corner, corner, framePaint);
 
             colorIndex++;
             if (colorIndex >= FRAME_COLORS.length) {
                 break;
             }
+        }
+
+        final Paint textPaint = new Paint();
+        int legendFontSize = res.getDimensionPixelSize(R.dimen.detect_info_font_size);
+        int legendIndSize = res.getDimensionPixelSize(R.dimen.detect_info_font_size);
+        int legendFramePadding = res.getDimensionPixelSize(R.dimen.detect_info_padding);
+        textPaint.setTextSize(legendFontSize);
+
+        RectF legendIndFrame = new RectF();
+
+        final float legendTextWidth = width * .3f;
+        final float legendHeight = legendIndSize * 1.2f;
+        final float legendEnd = width * .95f;
+        final float legendIndStart = legendEnd - legendTextWidth - legendIndSize * 1.2f;
+        float legendBottom = height * .95f;
+        float legendTop = legendBottom - colorIndex * legendHeight;
+
+        framePaint.setStyle(Paint.Style.FILL_AND_STROKE);
+        framePaint.setColor(res.getColor(R.color.semi_black,
+                context.getTheme()));
+
+        canvas.drawRoundRect(legendIndStart - legendFramePadding, legendTop - legendFramePadding,
+                legendEnd + legendFramePadding, legendBottom + legendFramePadding, corner, corner, framePaint);
+        float legendTextStart;
+        float legendTextTop;
+        float legendIndTop;
+
+        colorIndex = 0;
+
+        String legendText;
+        for (int i = 0; i < N; i++) {
+            r = recognitions.get(i);
+
+            legendIndTop = legendTop + 0.1f * legendIndSize;
+            legendTextStart = legendEnd - legendTextWidth;
+            legendTextTop = legendIndTop + (legendIndSize - (textPaint.descent() + textPaint.ascent())) / 2;
+
+            legendIndFrame.set(legendIndStart, legendIndTop,
+                    legendIndStart + legendIndSize, legendIndTop + legendIndSize);
+
+            textPaint.setColor(res.getColor(FRAME_COLORS[colorIndex],
+                    context.getTheme()));
+
+            legendText = String.format("%s (%3.1f%%)",
+                    TextUtils.capitalize(r.getTitle()),
+                    r.getConfidence() * 100);
+            canvas.drawRoundRect(legendIndFrame, corner, corner, textPaint);
+            canvas.drawText(legendText, legendTextStart, legendTextTop,
+                    textPaint);
+            colorIndex++;
+            if (colorIndex >= FRAME_COLORS.length) {
+                break;
+            }
+
+            legendTop += legendHeight;
         }
 
         return taggedBitmap;

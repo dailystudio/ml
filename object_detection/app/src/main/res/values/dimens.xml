@@ -10,4 +10,8 @@
     <dimen name="card_action_padding">10dp</dimen>
     <dimen name="card_action_size">36dp</dimen>
 
+    <dimen name="detect_info_font_size">20dp</dimen>
+    <dimen name="detect_info_round_corner">3dp</dimen>
+    <dimen name="detect_info_padding">8dp</dimen>
+
 </resources>
