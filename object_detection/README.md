@@ -16,7 +16,7 @@ To reduce the complexity of compilation, a pre-downloaded model and result label
 The download link is extracted from the source code of original project in Tensorflow repository:
 - Before **r1.12** (include **r1.12**), the download links are listed in the file:
 [tensorflow/contrib/lite/examples/android/app/download-models.gradle](https://github.com/tensorflow/tensorflow/tree/r1.12/tensorflow/contrib/lite/examples/android/app/download-models.gradle)
-- After **r1.12**, the download links are moved to:
+- After **r1.12**, the file are moved to:
 [tensorflow/blob/master/tensorflow/lite/examples/android/app/download-models.gradle](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/examples/android/app/download-models.gradle)
 
 ### Slim API Wrapper
