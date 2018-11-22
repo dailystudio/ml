@@ -34,7 +34,7 @@ The first parameter is a Bitmap object which is decoded from your image file, wh
 
 ### Performance
 <img src=".github/object_detection_result_sample.jpg" width="498" height="280" alt="Object detection result"/>
-The entire detecting process is performed in a detected thread which is implemented through AsyncTask. Check the code in [DetectAsyncTask.java](https://github.com/dailystudio/ml/blob/master/object_detection/app/src/main/java/com/dailystudio/objectdetection/DetectAsyncTask.java)to see the details. There are three separated phase of detection, decoding, detecting and tagging the results. You can find the performance tracking output through the logcat, here is a sample:
+The entire detecting process is performed in a detected thread which is implemented through AsyncTask. Check the code in [DetectAsyncTask.java](https://github.com/dailystudio/ml/blob/master/object_detection/app/src/main/java/com/dailystudio/objectdetection/DetectAsyncTask.java) to see the details. There are three separated phase of detection, decoding, detecting and tagging the results. You can find the performance tracking output through the logcat, here is a sample:
 
 ```powershell
 D/DetectAsyncTask: doInBackground(): detection is accomplished in 2004ms [decode: 89ms, detect: 74ms, tag: 1841ms].
