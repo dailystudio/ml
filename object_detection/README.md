@@ -14,7 +14,7 @@ To reduce the complexity of compilation, a pre-downloaded model and result label
 >https://storage.googleapis.com/download.tensorflow.org/models/tflite/coco_ssd_mobilenet_v1_1.0_quant_2018_06_29.zip
 
 The download link is extracted from the source code of original project in Tensorflow repository:
-- Before **r1.12** (include **r1.12**), the download links are listed in the file
+- Before **r1.12** (include **r1.12**), the download links are listed in the file:
 [tensorflow/contrib/lite/examples/android/app/download-models.gradle](https://github.com/tensorflow/tensorflow/tree/r1.12/tensorflow/contrib/lite/examples/android/app/download-models.gradle)
 - After **r1.12**, the download links are moved to:
 [tensorflow/blob/master/tensorflow/lite/examples/android/app/download-models.gradle](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/examples/android/app/download-models.gradle)
@@ -34,6 +34,7 @@ The first parameter is a Bitmap object which is decoded from your image file, wh
 
 ### Performance
 <img src=".github/object_detection_result_sample.jpg" width="498" height="280" alt="Object detection result"/>
+
 The entire detecting process is performed in a detected thread which is implemented through AsyncTask. Check the code in [DetectAsyncTask.java](https://github.com/dailystudio/ml/blob/master/object_detection/app/src/main/java/com/dailystudio/objectdetection/DetectAsyncTask.java) to see the details. There are three separated phase of detection, decoding, detecting and tagging the results. You can find the performance tracking output through the logcat, here is a sample:
 
 ```powershell
