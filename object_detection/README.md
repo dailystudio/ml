@@ -35,7 +35,9 @@ The first parameter is a Bitmap object which is decoded from your image file, wh
 ### Performance
 <img src=".github/object_detection_result_sample.jpg" width="498" height="280" alt="Object detection result"/>
 The entire detecting process is performed in a detected thread which is implemented through AsyncTask. Check the code in [DetectAsyncTask.java](https://github.com/dailystudio/ml/blob/master/object_detection/app/src/main/java/com/dailystudio/objectdetection/DetectAsyncTask.java) to see the details. There are three separated phase of detection, decoding, detecting and tagging the results. You can find the performance tracking output through the logcat, here is a sample:
+
 ```powershell
 D/DetectAsyncTask: doInBackground(): detection is accomplished in 2004ms [decode: 89ms, detect: 74ms, tag: 1841ms].
 ```
+
 The main part of latency comes from results tagging. I guess that is why the original project required native codes to results tracking in live camera preview. The latency of the object detection will be slightly different among 4 core and 8 core CPUs. It is about 50ms to 100ms. The original size of the input image will not affect the latency of object detection, because we will always scale them to 300 x 300 in dimension before we pass it to Tensorflow model. But high resolution of input will dramatically increase the result tagging latency. Currently, in this project, we scale the input image to make sure it has a dimension smaller than 1920 x1920. The tagging time will be around 1.5 seconds to 2 seconds. If we use a regular photo (e.g. with 3000+ pixels both in width and height), tagging time will be increased to about 15 seconds.
