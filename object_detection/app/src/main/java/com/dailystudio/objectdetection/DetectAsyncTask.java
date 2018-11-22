@@ -128,7 +128,7 @@ public class DetectAsyncTask extends AsyncTask<Context, Void, List<Classifier.Re
 
         final Paint framePaint = new Paint();
         framePaint.setStyle(Paint.Style.STROKE);
-        framePaint.setStrokeWidth(20.0f);
+        framePaint.setStrokeWidth(10.0f);
 
         Classifier.Recognition r;
         for (int i = 0; i < N; i++) {
