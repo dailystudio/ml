@@ -33,7 +33,7 @@ List<Classifier.Recognition> results =
 The first parameter is a Bitmap object which is decoded from your image file, while the second parameter is a threshold of detection. Only if the confidence value of the detected object is higher than this threshold, it is will be listed in the results.
 
 ### Performance
-<img src=".github/object_detection_result_sample.png" width="280" height="498" alt="Object detection result"/>
+<img src=".github/object_detection_result_sample.png" width="498" height="280" alt="Object detection result"/>
 The entire detecting process is performed in a detected thread which is implemented through AsyncTask. Check the code in [DetectAsyncTask.java](https://github.com/dailystudio/ml/blob/master/object_detection/app/src/main/java/com/dailystudio/objectdetection/DetectAsyncTask.java) to see the details. There are three separated phase of detection, decoding, detecting and tagging the results. You can find the performance tracking output through the logcat, here is a sample:
 ```powershell
 D/DetectAsyncTask: doInBackground(): detection is accomplished in 2004ms [decode: 89ms, detect: 74ms, tag: 1841ms].
