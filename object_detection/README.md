@@ -20,7 +20,7 @@ The download link is extracted from the source code of original project in Tenso
 [tensorflow/blob/master/tensorflow/lite/examples/android/app/download-models.gradle](https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/examples/android/app/download-models.gradle)
 
 ### Slim API Wrapper
-For ease of use for development, we also provide a slim wrapper on original model, [ObjectDetectionModel](https://github.com/dailystudio/ml/blob/master/object_detection/app/src/main/java/com/dailystudio/objectdetection/api/ObjectDetectionModel.java).
+Ease of use for development, we also provide a slim wrapper on original model, [ObjectDetectionModel](https://github.com/dailystudio/ml/blob/master/object_detection/app/src/main/java/com/dailystudio/objectdetection/api/ObjectDetectionModel.java).
 To use this API, calling **initialize()** before using it to detect images.
 ```java
 ObjectDetectionModel.isInitialized()
