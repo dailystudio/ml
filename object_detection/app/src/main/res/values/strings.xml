@@ -2,7 +2,10 @@
     <string name="app_name_release">Object Detection</string>
     <string name="app_name_debug">Object Detection (Debug)</string>
 
-    <string name="prompt_paint_share">I\'m sharing the detected image with you.</string>
+    <string name="prompt_image_share">I\'m sharing the detected image with you.</string>
+    <string name="prompt_decoding">Decoding image...</string>
+    <string name="prompt_detecting">Detecting objects...</string>
+    <string name="prompt_tagging">Tagging results...</string>
 
 
 </resources>

@@ -16,6 +16,9 @@ import com.dailystudio.objectdetection.api.Classifier;
 import com.dailystudio.objectdetection.api.ObjectDetectionModel;
 import com.dailystudio.objectdetection.database.DetectedImage;
 import com.dailystudio.objectdetection.database.DetectedImageDatabaseModel;
+import com.dailystudio.objectdetection.ui.ImageDetectionEvent;
+
+import org.greenrobot.eventbus.EventBus;
 
 import java.util.List;
 
@@ -46,6 +49,7 @@ public class DetectAsyncTask extends AsyncTask<Context, Void, List<Classifier.Re
             return null;
         }
 
+        notifyDetectionState(ImageDetectionEvent.State.DECODING);
         final Context context = contexts[0];
 
         final long start = System.currentTimeMillis();
@@ -71,6 +75,8 @@ public class DetectAsyncTask extends AsyncTask<Context, Void, List<Classifier.Re
             orientation = DetectedImage.Orientation.PORTRAIT;
         }
 
+        notifyDetectionState(ImageDetectionEvent.State.DETECTING);
+
         final long startOfAnalysis = System.currentTimeMillis();
 
         List<Classifier.Recognition> results =
@@ -79,6 +85,8 @@ public class DetectAsyncTask extends AsyncTask<Context, Void, List<Classifier.Re
         final long startOfTagging = System.currentTimeMillis();
         final String outputPath = Directories.getDetectedFilePath(String.format("%d.jpg",
                 startOfTagging));
+
+        notifyDetectionState(ImageDetectionEvent.State.TAGGING);
 
         final Bitmap tagBitmap = tagRecognitionOnBitmap(context, bitmap, results);
         if (tagBitmap != null) {
@@ -207,8 +215,13 @@ public class DetectAsyncTask extends AsyncTask<Context, Void, List<Classifier.Re
     protected void onPostExecute(List<Classifier.Recognition> recognitions) {
         super.onPostExecute(recognitions);
 
+        notifyDetectionState(ImageDetectionEvent.State.DONE);
+
         Logger.debug("recognitions: %s", recognitions);
     }
 
+    private void notifyDetectionState(ImageDetectionEvent.State state) {
+        EventBus.getDefault().post(new ImageDetectionEvent(state));
+    }
 
 }

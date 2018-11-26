@@ -68,7 +68,7 @@ public class DetectedImageViewHolder extends AbsArrayItemViewHolder<DetectedImag
                     share.setType("image/*");
 
                     share.putExtra(Intent.EXTRA_TEXT,
-                            context.getString(R.string.prompt_paint_share));
+                            context.getString(R.string.prompt_image_share));
                     share.putExtra(Intent.EXTRA_STREAM, imageUri);
 
                     ActivityLauncher.launchActivity(context, Intent.createChooser(share, "Share Image"));

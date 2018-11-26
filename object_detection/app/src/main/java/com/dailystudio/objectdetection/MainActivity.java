@@ -25,6 +25,7 @@ import com.dailystudio.development.Logger;
 import com.dailystudio.objectdetection.api.ObjectDetectionModel;
 import com.dailystudio.objectdetection.database.DetectedImage;
 import com.dailystudio.objectdetection.fragment.DetectedImagesFragment;
+import com.dailystudio.objectdetection.ui.ImageDetectionEvent;
 import com.dailystudio.objectdetection.ui.ImageSelectedEvent;
 import com.dailystudio.objectdetection.utils.FilePickUtils;
 import com.nostra13.universalimageloader.core.ImageLoader;
@@ -257,5 +258,30 @@ public class MainActivity extends ActionBarFragmentActivity {
                     Constants.PREVIEW_IMAGE_LOADER_OPTIONS);
         }
     }
+
+    @Subscribe(threadMode = ThreadMode.MAIN)
+    public void onImageDetectionEvent(ImageDetectionEvent event) {
+        Logger.debug("new detection state: %s", event.state);
+
+        switch (event.state) {
+            case DECODING:
+                showPrompt(getString(R.string.prompt_decoding));
+                break;
+
+            case DETECTING:
+                showPrompt(getString(R.string.prompt_detecting));
+                break;
+
+            case TAGGING:
+                showPrompt(getString(R.string.prompt_tagging));
+                break;
+
+            case DONE:
+                hidePrompt();
+                break;
+
+        }
+    }
+
 
 }
