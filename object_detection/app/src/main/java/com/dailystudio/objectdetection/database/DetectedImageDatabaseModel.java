@@ -43,14 +43,14 @@ public class DetectedImageDatabaseModel extends AbsTimeCapsuleModel<DetectedImag
         if (object == null
                 || keys == null
                 || keys.hasValue(DetectedImage.COLUMN_SOURCE) == false
-                || keys.hasValue(DetectedImage.COLUMN_DETECTED) == false
+                || keys.hasValue(DetectedImage.COLUMN_DETECTED_PATH) == false
                 || keys.hasValue(DetectedImage.COLUMN_ORIENTATION, true) == false) {
             return;
         }
 
         object.setTime(System.currentTimeMillis());
         object.setSourcePath((String)keys.getValue(DetectedImage.COLUMN_SOURCE));
-        object.setStyledPath((String)keys.getValue(DetectedImage.COLUMN_DETECTED));
+        object.setStyledPath((String)keys.getValue(DetectedImage.COLUMN_DETECTED_PATH));
         object.setOrientation((DetectedImage.Orientation) keys.getValue(DetectedImage.COLUMN_ORIENTATION));
     }
 
@@ -104,7 +104,7 @@ public class DetectedImageDatabaseModel extends AbsTimeCapsuleModel<DetectedImag
         DatabaseObjectKeys keys = new DatabaseObjectKeys();
 
         keys.putValue(DetectedImage.COLUMN_SOURCE, srcPath);
-        keys.putValue(DetectedImage.COLUMN_DETECTED, detectedPath);
+        keys.putValue(DetectedImage.COLUMN_DETECTED_PATH, detectedPath);
         keys.putValue(DetectedImage.COLUMN_ORIENTATION, orientation);
 
         return INSTANCE.addOrUpdateObject(context, keys);

@@ -21,12 +21,12 @@ public class DetectedImage extends TimeCapsule {
     }
 
     public static final Column COLUMN_SOURCE = new TextColumn("source", false);
-    public static final Column COLUMN_DETECTED = new TextColumn("styled", false);
+    public static final Column COLUMN_DETECTED_PATH = new TextColumn("detected_path", false);
     public static final Column COLUMN_ORIENTATION = new TextColumn("orientation", false);
 
     private final static Column[] sCloumns = {
             COLUMN_SOURCE,
-            COLUMN_DETECTED,
+            COLUMN_DETECTED_PATH,
             COLUMN_ORIENTATION,
     };
 
@@ -57,11 +57,11 @@ public class DetectedImage extends TimeCapsule {
     }
 
     public void setStyledPath(String styledPath) {
-        setValue(COLUMN_DETECTED, styledPath);
+        setValue(COLUMN_DETECTED_PATH, styledPath);
     }
 
     public String getDetectedPath() {
-        return getTextValue(COLUMN_DETECTED);
+        return getTextValue(COLUMN_DETECTED_PATH);
     }
 
     public void setOrientation(Orientation orientation) {
