@@ -17,7 +17,7 @@ import java.util.List;
 
 public class DetectedImageDatabaseModel extends AbsTimeCapsuleModel<DetectedImage> {
 
-    private final static String GET_STYLED_IMAGE = "get-styled-image";
+    private final static String GET_DETECTED_IMAGE = "get-styled-image";
 
     public DetectedImageDatabaseModel(@NonNull Class<DetectedImage> objectClass) {
         super(objectClass);
@@ -56,7 +56,7 @@ public class DetectedImageDatabaseModel extends AbsTimeCapsuleModel<DetectedImag
 
     @Override
     protected ExpressionToken objectsToken(DatabaseObjectKeys keys, @NonNull String tokenType) {
-        if (GET_STYLED_IMAGE.equals(tokenType)) {
+        if (GET_DETECTED_IMAGE.equals(tokenType)) {
             if (keys != null
                     && keys.hasValue(DetectedImage.COLUMN_SOURCE)) {
                 final String srcPath = (String) keys.getValue(DetectedImage.COLUMN_SOURCE);
@@ -117,7 +117,7 @@ public class DetectedImageDatabaseModel extends AbsTimeCapsuleModel<DetectedImag
         keys.putValue(DetectedImage.COLUMN_SOURCE, srcPath);
 
         List<DetectedImage> images =
-                INSTANCE.listObjects(context, keys, GET_STYLED_IMAGE);
+                INSTANCE.listObjects(context, keys, GET_DETECTED_IMAGE);
         if (images == null || images.size() <= 0) {
             return null;
         }
