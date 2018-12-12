@@ -9,11 +9,11 @@ INPUT_FILE = './input/mbti_1.csv'
 VOC_FILE = 'data/voc_int.npy'
 DATA_FILE = 'data/data.csv'
 
-MAX_SEQUENCE_LENGTH = 923
+MAX_SEQUENCE_LENGTH = 512
 MAX_FEATURES = 2000
 
 GLOVE_DIR = 'data/glove6b'
-EMBEDDING_DIM = 100
+EMBEDDING_DIM = 300
 MAX_NB_WORDS = 2000
 
 
@@ -78,48 +78,6 @@ def load_vocab(dict_file):
     return vocab_data
 
 
-def train():
-    # train_x, train_y, eval_x, eval_y, test_x, test_y = load_data(DATA_FILE)
-    train_x, train_y, test_x, test_y = load_data(DATA_FILE)
-
-    vocab = load_vocab(VOC_FILE)
-    vocab_size = len(vocab) + 1
-
-    print('Vocabulary size: {}'.format(vocab_size))
-
-    embedding_layers = load_embeddings(vocab)
-
-    model = keras.Sequential()
-    model.add(embedding_layers)
-    # model.add(keras.layers.GlobalAveragePooling1D())
-    model.add(keras.layers.Bidirectional(keras.layers.LSTM(64)))
-    # model.add(keras.layers.Dense(128, activation='relu'))
-    model.add(keras.layers.Dense(4))
-
-    model.summary()
-
-    model.compile(optimizer=tf.train.AdamOptimizer(),
-                  loss='mse',
-                  metrics=['accuracy'])
-
-    history = model.fit(train_x,
-                        train_y,
-                        epochs=40,
-                        batch_size=32,
-                        validation_split=0.20,
-                        shuffle=True,
-                        verbose=1)
-
-    results = model.evaluate(test_x, test_y)
-    print(results)
-
-    print(test_x.head(5))
-    print(test_y.head(5))
-    outputs = model.predict(test_x)
-    predicted = np.argmax(outputs, axis=1)
-    print(predicted)
-
-
 def load_embeddings(vocab, dim=EMBEDDING_DIM):
     embeddings_index = {}
     f = open(os.path.join(GLOVE_DIR, 'glove.6B.%sd.txt' % str(dim)))
@@ -152,6 +110,100 @@ def load_embeddings(vocab, dim=EMBEDDING_DIM):
 
     return embedding_layer
 
+
+def train():
+    # train_x, train_y, eval_x, eval_y, test_x, test_y = load_data(DATA_FILE)
+    train_x, train_y, test_x, test_y = load_data(DATA_FILE)
+
+    vocab = load_vocab(VOC_FILE)
+    vocab_size = len(vocab) + 1
+
+    print('Vocabulary size: {}'.format(vocab_size))
+
+    embedding_layers = load_embeddings(vocab)
+
+    model = keras.Sequential()
+    model.add(embedding_layers)
+    # model.add(keras.layers.GlobalAveragePooling1D())
+    model.add(keras.layers.Bidirectional(keras.layers.LSTM(64)))
+    # model.add(keras.layers.Dense(128, activation='relu'))
+    model.add(keras.layers.Dense(4))
+
+    model.summary()
+
+    model.compile(optimizer=tf.train.AdamOptimizer(),
+                  loss='mse',
+                  metrics=['accuracy'])
+
+    history = model.fit(train_x,
+                        train_y,
+                        epochs=80,
+                        batch_size=64,
+                        validation_split=0.20,
+                        shuffle=True,
+                        verbose=1)
+
+    results = model.evaluate(test_x, test_y)
+    print(results)
+
+    print(test_x.head(5))
+    print(test_y.head(5))
+    outputs = model.predict(test_x)
+    predicted = np.argmax(outputs, axis=1)
+    print(predicted)
+
+
+def train_category(category, train_x, train_y, test_x, test_y, vocab, embedding_layers):
+    model = keras.Sequential()
+    model.add(embedding_layers)
+    # model.add(keras.layers.GlobalAveragePooling1D())
+    model.add(keras.layers.Bidirectional(keras.layers.LSTM(64)))
+    # model.add(keras.layers.Dense(128, activation='relu'))
+    model.add(keras.layers.Dense(1, activation=tf.nn.sigmoid))
+
+    model.summary()
+
+    model.compile(optimizer=tf.train.AdamOptimizer(),
+                  loss='binary_crossentropy',
+                  metrics=['accuracy'])
+
+    history = model.fit(train_x,
+                        train_y,
+                        epochs=10,
+                        batch_size=64,
+                        validation_split=0.20,
+                        shuffle=True,
+                        verbose=1)
+
+    results = model.evaluate(test_x, test_y)
+    print('CATEGORY: {}, results: {}'.format(category, results))
+
+    outputs = model.predict(test_x)
+    predicted = np.argmax(outputs, axis=1)
+    print('CATEGORY: {}, prediction: {}'.format(category, predicted))
+    print(predicted)
+
+
+def train_4d():
+    # train_x, train_y, eval_x, eval_y, test_x, test_y = load_data(DATA_FILE)
+    train_x, train_y, test_x, test_y = load_data(DATA_FILE)
+
+    vocab = load_vocab(VOC_FILE)
+    vocab_size = len(vocab) + 1
+
+    print('Vocabulary size: {}'.format(vocab_size))
+
+    embedding_layers = load_embeddings(vocab)
+
+    for i in range(0, 4):
+        train_category('category_0',
+                       train_x, train_y.iloc[:, i],
+                       test_x, test_y.iloc[:, i],
+                       vocab, embedding_layers)
+
+
 # pre_process_data(INPUT_FILE, MAX_SEQUENCE_LENGTH)
 
-train()
+# train()
+
+train_4d()
