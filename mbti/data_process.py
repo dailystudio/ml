@@ -1,14 +1,16 @@
+import os
 import numpy as np
 import pandas as pd
 from keras_preprocessing.sequence import pad_sequences
 from keras_preprocessing.text import Tokenizer
-
+from tensorflow import keras
 import utils
-from sklearn.preprocessing import LabelBinarizer
-from collections import Counter
 
+EMBEDDING_DIM = 300
 MAX_NB_WORDS = 2000
 DEFAULT_MAX_SEQ = 923
+
+GLOVE_DIR = 'data/glove6b'
 
 
 class LabelTranslator:
@@ -51,35 +53,6 @@ class LabelTranslator:
         return personalities
 
 
-class LabelEncoder:
-    MBTI_LABELS = {0: 'ENFJ', 1: 'ENFP', 2: 'ENTJ', 3: 'ENTP',
-                   4: 'ESFJ', 5: 'ESFP', 6: 'ESTJ', 7: 'ESTP',
-                   8: 'INFJ', 9: 'INFP', 10: 'INTJ', 11: 'INTP',
-                   12: 'ISFJ', 13: 'ISFP', 14: 'ISTJ', 15: 'ISTP'}
-
-    encoder = None
-
-    def __init__(self):
-        self.encoder = LabelBinarizer(neg_label=0, pos_label=1, sparse_output=False)
-
-        labels = []
-        for l in self.MBTI_LABELS.values():
-            labels.append(l)
-        self.encoder.fit(labels)
-
-    def encode(self, labels):
-        labels_data = np.array(self.encoder.transform(labels))
-
-        rev_labels = self.decode(labels_data)
-        for i in range(0, len(labels)):
-            print('[LABEL] raw: %s, token: %s, rev: %s' % (labels[i], labels_data[i], rev_labels[i]))
-
-        return labels_data
-
-    def decode(self, labels_data):
-        return self.encoder.inverse_transform(labels_data)
-
-
 def process_labels(labels):
     encoder = LabelTranslator()
     return encoder.encode_all(labels)
@@ -120,73 +93,106 @@ def pre_process_with_glove(labels, posts, seq_max=0):
     return data, vocab_data
 
 
-def process_posts(posts):
-    posts_text = [utils.post_cleaner(post) for post in posts]
+def pre_process_data(input_data_file, output_data_file, output_vocab_file, seq_max=0):
+    text = pd.read_csv(input_data_file, index_col='type')
 
-    word_count = Counter()
-    for post in posts_text:
-        word_count.update(post.split(" "))
+    raw_labels = text.index.tolist()
+    raw_posts = text.posts.tolist()
 
-    vocab_len = len(word_count)
-    print(vocab_len)
+    train_data, vocab_data = pre_process_with_glove(raw_labels, raw_posts, seq_max)
 
-    # Create a look up table
-    vocab_list = sorted(word_count, key=word_count.get, reverse=True)
-    # Create your dictionary that maps vocab words to integers here
-    vocab_data = {word: ii for ii, word in enumerate(vocab_list, 1)}
+    print('saving the vocabulary into file: [{}]'.format(output_vocab_file))
+    np.save(output_vocab_file, vocab_data)
 
-    posts_ints = []
-    for post in posts_text:
-        posts_ints.append([vocab_data[word] for word in post.split()])
-
-    print('[POST] raw: [%s]' % (posts[0]))
-    print('------------------------------------------------')
-    print('[POST] cleaned up: [%s]' % (posts_text[0]))
-    print('------------------------------------------------')
-    print('[POST] ints: [%s]' % (posts_ints[0]))
-    print('------------------------------------------------')
-
-    print('posts_text: ' + str(len(posts_text)))
-    print('posts_ints: ' + str(len(posts_ints)))
-
-    posts_data = np.asarray(posts_ints)
-    print('posts_data: ' + str(posts_data.shape))
-
-    return posts_ints, vocab_data
+    print('saving the data into file: [{}] '.format(output_data_file))
+    df = pd.DataFrame(train_data)
+    df.to_csv(output_data_file)
 
 
-def pre_process(labels, posts, seq_max=0):
-    labels_data = process_labels(labels)
-    posts_data, vocab_data = process_posts(posts, seq_max)
+def load_data(data_file, split_fraction=0.8):
+    df = pd.read_csv(data_file)
+    print('[DATA SET]')
+    print(df.head(5))
+    print()
 
-    posts_data_lens = [len(x) for x in posts_data]
-    average_len = int(np.mean(posts_data_lens))
+    rows = df.shape[0]
+    print('{} records'.format(rows))
 
-    print("Maximum post ints length: {}".format(max(posts_data_lens)))
-    print("Minimum post ints length: {}".format(min(posts_data_lens)))
-    print("Average post ints length: {}".format(average_len))
+    train_rows = int(split_fraction * rows)
+    # remained_rows = rows - train_rows
+    # eval_rows = int(remained_rows / 2)
+    test_rows = rows - train_rows
 
-    if seq_max > 0:
-        seq_len = seq_max
-    else:
-        seq_len = int(average_len)
+    print('{} train records'.format(train_rows))
+    #    print('{} eval records'.format(eval_rows))
+    print('{} test records'.format(test_rows))
 
-    features = np.zeros((len(posts_data), seq_len), dtype=int)
-    for i, row in enumerate(posts_data):
-        features[i, 0: len(row)] = np.array(row)[:seq_len]
-    print('features: ' + str(features.shape))
-    print(features[0])
+    # eval_start = train_rows
+    test_start = train_rows
 
-    data = np.concatenate((labels_data, features), axis=1)
-    print('data[0]: ' + str(data[10:]))
+    train_features = df.loc[:train_rows, '4':]
+    train_labels = df.loc[:train_rows, '0':'3']
+    print('train features: \n{}'.format(train_features.head(5)))
+    print('train labels: \n{}'.format(train_labels.head(5)))
 
-    return data, vocab_data
+    # eval_features = df.loc[eval_start:train_rows + eval_rows, '5':]
+    # eval_labels = df.loc[eval_start:train_rows + eval_rows, '0':'4']
+    # print('eval features: \n{}'.format(train_features.head(5)))
+    # print('eval labels: \n{}'.format(train_labels.head(5)))
+
+    test_features = df.loc[test_start:, '4':]
+    test_labels = df.loc[test_start:, '0':'3']
+    print('test features: \n{}'.format(test_features.head(5)))
+    print('test labels: \n{}'.format(test_labels.head(5)))
+
+    # return train_features, train_labels, eval_features, eval_labels, test_features, test_labels
+    return train_features, train_labels, test_features, test_labels
+
+
+def load_vocab(vocab_file):
+    vocab_data = np.load(vocab_file).item()
+    return vocab_data
+
+
+def load_embeddings(vocab, max_seq, dim=EMBEDDING_DIM):
+    embeddings_index = {}
+    f = open(os.path.join(GLOVE_DIR, 'glove.6B.%sd.txt' % str(dim)))
+    for line in f:
+        values = line.split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
+    f.close()
+
+    print('Found %s word vectors.' % len(embeddings_index))
+
+    # prepare embedding matrix
+    num_words = min(MAX_NB_WORDS, len(vocab))
+    embedding_matrix = np.zeros((num_words, dim))
+    for word, i in vocab.items():
+        if i >= MAX_NB_WORDS:
+            continue
+        embedding_vector = embeddings_index.get(word)
+        if embedding_vector is not None:
+            # words not found in embedding index will be all-zeros.
+            embedding_matrix[i] = embedding_vector
+
+    # load pre-trained word embeddings into an Embedding layer
+    embedding_layer = keras.layers.Embedding(num_words,
+                                             dim,
+                                             weights=[embedding_matrix],
+                                             input_length=max_seq,
+                                             trainable=False)
+
+    return embedding_layer
+
+
+# Test section
 
 INPUT_FILE = './input/mbti_1.csv'
 
 
 def __test_labels_encoding__():
-
     text = pd.read_csv(INPUT_FILE, index_col='type')
 
     raw_labels = text.index.tolist()
