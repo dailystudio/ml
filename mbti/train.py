@@ -1,3 +1,4 @@
+import os
 import numpy as np
 import pandas as pd
 import data_process
@@ -10,6 +11,10 @@ DATA_FILE = 'data/data.csv'
 
 MAX_SEQUENCE_LENGTH = 923
 MAX_FEATURES = 2000
+
+GLOVE_DIR = 'data/glove6b'
+EMBEDDING_DIM = 100
+MAX_NB_WORDS = 2000
 
 
 def pre_process_data(file, seq_max=0):
@@ -43,7 +48,7 @@ def load_data(file, split_frac=0.8):
     test_rows = rows - train_rows
 
     print('{} train records'.format(train_rows))
-#    print('{} eval records'.format(eval_rows))
+    #    print('{} eval records'.format(eval_rows))
     print('{} test records'.format(test_rows))
 
     # eval_start = train_rows
@@ -74,7 +79,6 @@ def load_vocab(dict_file):
 
 
 def train():
-
     # train_x, train_y, eval_x, eval_y, test_x, test_y = load_data(DATA_FILE)
     train_x, train_y, test_x, test_y = load_data(DATA_FILE)
 
@@ -83,8 +87,10 @@ def train():
 
     print('Vocabulary size: {}'.format(vocab_size))
 
+    embedding_layers = load_embeddings(vocab)
+
     model = keras.Sequential()
-    model.add(keras.layers.Embedding(MAX_FEATURES, 256, input_length=MAX_SEQUENCE_LENGTH))
+    model.add(embedding_layers)
     # model.add(keras.layers.GlobalAveragePooling1D())
     model.add(keras.layers.Bidirectional(keras.layers.LSTM(64)))
     # model.add(keras.layers.Dense(128, activation='relu'))
@@ -112,6 +118,39 @@ def train():
     outputs = model.predict(test_x)
     predicted = np.argmax(outputs, axis=1)
     print(predicted)
+
+
+def load_embeddings(vocab, dim=EMBEDDING_DIM):
+    embeddings_index = {}
+    f = open(os.path.join(GLOVE_DIR, 'glove.6B.%sd.txt' % str(dim)))
+    for line in f:
+        values = line.split()
+        word = values[0]
+        coefs = np.asarray(values[1:], dtype='float32')
+        embeddings_index[word] = coefs
+    f.close()
+
+    print('Found %s word vectors.' % len(embeddings_index))
+
+    # prepare embedding matrix
+    num_words = min(MAX_NB_WORDS, len(vocab))
+    embedding_matrix = np.zeros((num_words, EMBEDDING_DIM))
+    for word, i in vocab.items():
+        if i >= MAX_NB_WORDS:
+            continue
+        embedding_vector = embeddings_index.get(word)
+        if embedding_vector is not None:
+            # words not found in embedding index will be all-zeros.
+            embedding_matrix[i] = embedding_vector
+
+    # load pre-trained word embeddings into an Embedding layer
+    embedding_layer = keras.layers.Embedding(num_words,
+                                             EMBEDDING_DIM,
+                                             weights=[embedding_matrix],
+                                             input_length=MAX_SEQUENCE_LENGTH,
+                                             trainable=False)
+
+    return embedding_layer
 
 # pre_process_data(INPUT_FILE, MAX_SEQUENCE_LENGTH)
 
