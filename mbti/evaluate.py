@@ -13,7 +13,7 @@ DEFAULT_TRAIN_FRACTION = .8
 DEFAULT_EVAL_FRACTION = .2
 DEFAULT_EMBEDDING_DIM = 300
 
-MODEL_FILE_NAME_TEMPLATE = 'model_seq_{}_epoch_{}_embedding_{}_{}.h5'
+MODEL_FILE_NAME_TEMPLATE = 'model_{}_seq_{}_epoch_{}_embedding_{}.h5'
 
 
 def train_category(category,
@@ -93,60 +93,62 @@ def train_by_columns(data_file, voc_file, model_dir, glove_dir,
                                epoch, batch_size)
 
         model.save(os.path.join(model_dir,
-                                MODEL_FILE_NAME_TEMPLATE.format(max_seq,
-                                                                epoch, embedding_dim, i)))
+                                MODEL_FILE_NAME_TEMPLATE.format(i, max_seq,
+                                                                epoch, embedding_dim)))
+
+
+def predict(input_file, model_dir, model_prefix):
+    print('predicting: input = {}, model = {}/{}_*.h5'.format(
+        input_file, model_dir, model_prefix))
+
+    params = model_prefix.split('_')
+    print('params: {}'.format(params))
+
+    seq_max = int(params[2])
+    print('seq_max: {}'.format(seq_max))
+
+    with open(input_file) as f:
+        posts = f.readlines()
+    print('{} post to be predicted'.format(len(posts)))
+
+    posts_data, _ = data_process.process_posts_with_glove(posts, seq_max)
+    print('post data: {}'.format(posts_data))
+
+    predictions = []
+    for i in range(0, 4):
+        file = os.path.join(model_dir, model_prefix + '_' + str(i) + '.h5')
+        print('model: {}'.format(file))
+        model = keras.models.load_model(file)
+        model.compile(optimizer=tf.train.AdamOptimizer(),
+                      loss='binary_crossentropy',
+                      metrics=['accuracy'])
+
+        column_outputs = model.predict(posts_data)
+        column_predication = np.round(column_outputs).reshape(len(column_outputs)).astype(int)
+        print('column predicted{}: {}'.format(i, column_predication))
+        predictions.append(column_predication)
+
+    outputs = np.asarray(predictions).T
+    print('predictions: {}'.format(outputs))
+
+    return outputs
 
 
 def real_main():
     ap = argparse.ArgumentParser()
 
-    io_group = ap.add_argument_group('input and output arguments')
-    io_group.add_argument("-d", "--data-file", required=True,
-                          help="specify pre-proceed MBTI data set file")
-    io_group.add_argument("-v", "--voc-file", required=True,
-                          help="specify vocabulary file")
-    io_group.add_argument("-m", "--model-dir", required=True,
-                          help="specify directory of output models")
-    io_group.add_argument("-g", "--glove-dir", required=True,
-                          help="specify directory of Glove")
-
-    ml_group = ap.add_argument_group('learning parameters')
-    ml_group.add_argument("-ts", "--train-split", required=False,
-                          type=float,
-                          default=DEFAULT_TRAIN_FRACTION,
-                          help="specify split fraction of train set")
-    ml_group.add_argument("-es", "--eval-split", required=False,
-                          type=float,
-                          default=DEFAULT_EVAL_FRACTION,
-                          help="specify split fraction of evaluate set in each epoch")
-    ml_group.add_argument("-ep", "--epoch", required=False,
-                          type=int,
-                          default=DEFAULT_EPOCHS,
-                          help="specify epoch count")
-    ml_group.add_argument("-bs", "--batch-size", required=False,
-                          type=int,
-                          default=DEFAULT_BATCH_SIZE,
-                          help="specify batch size in each epoch")
-    ml_group.add_argument("-ed", "--embedding-dim", required=False,
-                          type=int,
-                          choices=[50, 100, 200, 300],
-                          default=DEFAULT_EMBEDDING_DIM,
-                          help="specify batch size in each epoch")
+    ap.add_argument("-i", "--input-file", required=True,
+                    help="specify input data file")
+    ap.add_argument("-md", "--model-dir", required=True,
+                    help="specify directory of trained models")
+    ap.add_argument("-mp", "--model-prefix", required=True,
+                    help="specify prefix of trained models")
 
     args = ap.parse_args()
 
-    if not os.path.isdir(args.model_dir):
-        os.mkdir(args.model_dir)
+    outputs = predict(args.input_file, args.model_dir, args.model_prefix)
 
-    train_by_columns(args.data_file,
-                     args.voc_file,
-                     args.model_dir,
-                     args.glove_dir,
-                     args.epoch,
-                     args.batch_size,
-                     args.train_split,
-                     args.eval_split,
-                     args.embedding_dim)
+    print('results: {}'.format(data_process.translate_label_codes(outputs)))
 
 
 if __name__ == "__main__":
