@@ -10,7 +10,7 @@ import utils
 MAX_NB_WORDS = 2000
 DEFAULT_MAX_SEQ = 512
 
-DATA_FILE_NAME_TEMPLATE = 'data_{}.csv'
+DATA_FILE_NAME_TEMPLATE = 'data_seq_{}.csv'
 VOC_FILE_NAME = 'voc.npy'
 
 
@@ -198,7 +198,7 @@ def real_main():
                     help="specify input original MBTI data set file")
     ap.add_argument("-o", "--data-dir", required=True,
                     help="specify output data directory")
-    ap.add_argument("-max", "--max-seq", required=False,
+    ap.add_argument("-m", "--max-seq", required=False,
                     type=int,
                     default=[DEFAULT_MAX_SEQ],
                     nargs='+',
