@@ -1,4 +1,5 @@
 import os
+import argparse
 import numpy as np
 import pandas as pd
 from keras_preprocessing.sequence import pad_sequences
@@ -6,11 +7,11 @@ from keras_preprocessing.text import Tokenizer
 from tensorflow import keras
 import utils
 
-EMBEDDING_DIM = 300
 MAX_NB_WORDS = 2000
-DEFAULT_MAX_SEQ = 923
+DEFAULT_MAX_SEQ = 512
 
-GLOVE_DIR = 'data/glove6b'
+DATA_FILE_NAME_TEMPLATE = 'data_{}.csv'
+VOC_FILE_NAME = 'voc.npy'
 
 
 class LabelTranslator:
@@ -71,8 +72,6 @@ def process_posts_with_glove(posts, max_seq_len=DEFAULT_MAX_SEQ):
     sequences = tokenizer.texts_to_sequences(posts_text)
 
     word_index = tokenizer.word_index
-    print('sequences: {}'.format(sequences))
-    print('index: {}'.format(word_index))
     print('Found %s unique tokens.' % len(word_index))
 
     data = pad_sequences(sequences, maxlen=max_seq_len, padding='post', truncating='post')
@@ -93,7 +92,12 @@ def pre_process_with_glove(labels, posts, seq_max=0):
     return data, vocab_data
 
 
-def pre_process_data(input_data_file, output_data_file, output_vocab_file, seq_max=0):
+def pre_process_data(input_data_file, output_data_dir, seq_max):
+    data_file = os.path.join(output_data_dir, DATA_FILE_NAME_TEMPLATE.format(seq_max))
+    voc_file = os.path.join(output_data_dir, VOC_FILE_NAME)
+
+    print('data processing: input = {} --> data = {}, vocab = {}, sequence length = {}'.format(
+        input_data_file, data_file, voc_file, seq_max))
     text = pd.read_csv(input_data_file, index_col='type')
 
     raw_labels = text.index.tolist()
@@ -101,12 +105,12 @@ def pre_process_data(input_data_file, output_data_file, output_vocab_file, seq_m
 
     train_data, vocab_data = pre_process_with_glove(raw_labels, raw_posts, seq_max)
 
-    print('saving the vocabulary into file: [{}]'.format(output_vocab_file))
-    np.save(output_vocab_file, vocab_data)
+    print('saving the vocabulary into file: [{}]'.format(voc_file))
+    np.save(voc_file, vocab_data)
 
-    print('saving the data into file: [{}] '.format(output_data_file))
+    print('saving the data into file: [{}] '.format(data_file))
     df = pd.DataFrame(train_data)
-    df.to_csv(output_data_file)
+    df.to_csv(data_file)
 
 
 def load_data(data_file, split_fraction=0.8):
@@ -154,9 +158,9 @@ def load_vocab(vocab_file):
     return vocab_data
 
 
-def load_embeddings(vocab, max_seq, dim=EMBEDDING_DIM):
+def load_embeddings(vocab, max_seq, glove_dir, dim):
     embeddings_index = {}
-    f = open(os.path.join(GLOVE_DIR, 'glove.6B.%sd.txt' % str(dim)))
+    f = open(os.path.join(glove_dir, 'glove.6B.%sd.txt' % str(dim)))
     for line in f:
         values = line.split()
         word = values[0]
@@ -187,17 +191,32 @@ def load_embeddings(vocab, max_seq, dim=EMBEDDING_DIM):
     return embedding_layer
 
 
-# Test section
+def real_main():
+    ap = argparse.ArgumentParser()
 
-INPUT_FILE = './input/mbti_1.csv'
+    ap.add_argument("-i", "--input-file", required=True,
+                    help="specify input original MBTI data set file")
+    ap.add_argument("-o", "--data-dir", required=True,
+                    help="specify output data directory")
+    ap.add_argument("-max", "--max-seq", required=False,
+                    type=int,
+                    default=[DEFAULT_MAX_SEQ],
+                    nargs='+',
+                    choices=[128, 256, 512, 900],
+                    help="specify maximum sequence length")
+
+    args = ap.parse_args()
+
+    if not os.path.isdir(args.data_dir):
+        os.mkdir(args.data_dir)
+
+    max_seq = list(set(args.max_seq))
+    print('max sequence(s): {}'.format(max_seq))
+    for seq in max_seq:
+        pre_process_data(args.input_file,
+                         args.data_dir,
+                         seq)
 
 
-def __test_labels_encoding__():
-    text = pd.read_csv(INPUT_FILE, index_col='type')
-
-    raw_labels = text.index.tolist()
-    codes = process_labels(raw_labels)
-    personalities = translate_label_codes(codes)
-
-    for i in range(0, len(raw_labels)):
-        print('raw: {}, code: {}, personality: {}'.format(raw_labels[i], codes[i], personalities[i]))
+if __name__ == "__main__":
+    real_main()

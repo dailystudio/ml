@@ -1,62 +1,16 @@
+import os
+import argparse
 import numpy as np
 import data_process
 import tensorflow as tf
 from tensorflow import keras
 
-INPUT_FILE = './input/mbti_1.csv'
-VOC_FILE = 'data/voc_int.npy'
-DATA_FILE = 'data/data.csv'
+DEFAULT_EPOCHS = 40
+DEFAULT_BATCH_SIZE = 64
+DEFAULT_SPLIT_FRACTION = .8
+DEFAULT_EMBEDDING_DIM = 300
 
-MODEL_DIR = 'models'
-
-MAX_SEQUENCE_LENGTH = 512
-MAX_FEATURES = 2000
-
-GLOVE_DIR = 'data/glove6b'
-EMBEDDING_DIM = 300
-MAX_NB_WORDS = 2000
-
-
-def train():
-    # train_x, train_y, eval_x, eval_y, test_x, test_y = load_data(DATA_FILE)
-    train_x, train_y, test_x, test_y = data_process.load_data(DATA_FILE)
-
-    vocab = data_process.load_vocab(VOC_FILE)
-    vocab_size = len(vocab) + 1
-
-    print('Vocabulary size: {}'.format(vocab_size))
-
-    embedding_layers = data_process.load_embeddings(vocab, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM)
-
-    model = keras.Sequential()
-    model.add(embedding_layers)
-    # model.add(keras.layers.GlobalAveragePooling1D())
-    model.add(keras.layers.Bidirectional(keras.layers.LSTM(64)))
-    # model.add(keras.layers.Dense(128, activation='relu'))
-    model.add(keras.layers.Dense(4))
-
-    model.summary()
-
-    model.compile(optimizer=tf.train.AdamOptimizer(),
-                  loss='mse',
-                  metrics=['accuracy'])
-
-    history = model.fit(train_x,
-                        train_y,
-                        epochs=80,
-                        batch_size=64,
-                        validation_split=0.20,
-                        shuffle=True,
-                        verbose=1)
-
-    results = model.evaluate(test_x, test_y)
-    print(results)
-
-    print(test_x.head(5))
-    print(test_y.head(5))
-    outputs = model.predict(test_x)
-    predicted = np.argmax(outputs, axis=1)
-    print(predicted)
+MODEL_FILE_NAME_TEMPLATE = 'model_{}_{}.h5'
 
 
 def train_category(category,
@@ -65,9 +19,10 @@ def train_category(category,
                    epoch, batch_size):
     model = keras.Sequential()
     model.add(embedding_layers)
+
     # model.add(keras.layers.GlobalAveragePooling1D())
     model.add(keras.layers.Bidirectional(keras.layers.LSTM(64)))
-    # model.add(keras.layers.Dense(128, activation='relu'))
+    # model.add(keras.layers.Dense(16, activation=tf.nn.relu))
     model.add(keras.layers.Dense(1, activation=tf.nn.sigmoid))
 
     model.summary()
@@ -95,17 +50,27 @@ def train_category(category,
     return model
 
 
-def train_4d(epoch, batch_size):
-    # train_x, train_y, eval_x, eval_y, test_x, test_y = load_data(DATA_FILE)
-    train_x, train_y, test_x, test_y = data_process.load_data(DATA_FILE)
+def train_by_columns(data_file, voc_file, model_dir, glove_dir,
+                     epoch, batch_size, split_fraction, embedding_dim):
 
-    vocab = data_process.load_vocab(VOC_FILE)
+    print('training: data = {}, voc = {}, '
+          'epochs = {}, batch size = {}, '
+          'glove dir = {}, embedding dimen = {} ---> models = {}'.format(data_file, voc_file,
+                                                                         epoch, batch_size,
+                                                                         glove_dir, embedding_dim,
+                                                                         model_dir))
+
+    train_x, train_y, test_x, test_y = data_process.load_data(
+        data_file, split_fraction)
+    vocab = data_process.load_vocab(voc_file)
+
+    max_seq = train_x.shape[1]
     vocab_size = len(vocab) + 1
-
-    print('Vocabulary size: {}'.format(vocab_size))
+    print('training: sequence length = {}, vocabulary size = {}'.format(
+        max_seq, vocab_size))
 
     embedding_layers = data_process.load_embeddings(
-        vocab, MAX_SEQUENCE_LENGTH, EMBEDDING_DIM)
+        vocab, max_seq, glove_dir, embedding_dim)
 
     for i in range(0, 4):
         model_name = 'model_{}'.format(i)
@@ -115,16 +80,55 @@ def train_4d(epoch, batch_size):
                                embedding_layers,
                                epoch, batch_size)
 
-        model.save('{}/mbti_{}.h5'.format(MODEL_DIR, model_name))
+        model.save(os.path.join(model_dir, MODEL_FILE_NAME_TEMPLATE.format(max_seq, i)))
 
 
-# data_process.pre_process_data(INPUT_FILE,
-#                               DATA_FILE,
-#                               VOC_FILE,
-#                               MAX_SEQUENCE_LENGTH)
+def real_main():
+    ap = argparse.ArgumentParser()
 
-# train()
+    io_group = ap.add_argument_group('input and output arguments')
+    io_group.add_argument("-d", "--data-file", required=True,
+                          help="specify pre-proceed MBTI data set file")
+    io_group.add_argument("-v", "--voc-file", required=True,
+                          help="specify vocabulary file")
+    io_group.add_argument("-m", "--model-dir", required=True,
+                          help="specify directory of output models")
+    io_group.add_argument("-g", "--glove-dir", required=True,
+                          help="specify directory of Glove")
 
-epoch = 1
-batch_size = 256
-train_4d(epoch, batch_size)
+    ml_group = ap.add_argument_group('learning parameters')
+    ml_group.add_argument("-sf", "--split-fraction", required=False,
+                          type=float,
+                          default=DEFAULT_SPLIT_FRACTION,
+                          help="specify split fraction of train set and test set")
+    ml_group.add_argument("-ep", "--epoch", required=False,
+                          type=int,
+                          default=DEFAULT_EPOCHS,
+                          help="specify epoch count")
+    ml_group.add_argument("-bs", "--batch-size", required=False,
+                          type=int,
+                          default=DEFAULT_BATCH_SIZE,
+                          help="specify batch size in each epoch")
+    ml_group.add_argument("-ed", "--embedding-dim", required=False,
+                          type=int,
+                          choices=[50, 100, 200, 300],
+                          default=DEFAULT_EMBEDDING_DIM,
+                          help="specify batch size in each epoch")
+
+    args = ap.parse_args()
+
+    if not os.path.isdir(args.model_dir):
+        os.mkdir(args.model_dir)
+
+    train_by_columns(args.data_file,
+                     args.voc_file,
+                     args.model_dir,
+                     args.glove_dir,
+                     args.epoch,
+                     args.batch_size,
+                     args.split_fraction,
+                     args.embedding_dim)
+
+
+if __name__ == "__main__":
+    real_main()
