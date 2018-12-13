@@ -9,7 +9,8 @@ from tensorflow import keras
 
 DEFAULT_EPOCHS = 40
 DEFAULT_BATCH_SIZE = 64
-DEFAULT_SPLIT_FRACTION = .8
+DEFAULT_TRAIN_FRACTION = .8
+DEFAULT_EVAL_FRACTION = .2
 DEFAULT_EMBEDDING_DIM = 300
 
 MODEL_FILE_NAME_TEMPLATE = 'model_{}_seq_{}_epoch_{}_embedding_{}.h5'
@@ -18,6 +19,7 @@ MODEL_FILE_NAME_TEMPLATE = 'model_{}_seq_{}_epoch_{}_embedding_{}.h5'
 def train_category(category,
                    train_x, train_y, test_x, test_y,
                    embedding_layers,
+                   eval_split,
                    epoch, batch_size):
     start = timeit.default_timer()
 
@@ -39,16 +41,16 @@ def train_category(category,
                         train_y,
                         epochs=epoch,
                         batch_size=batch_size,
-                        validation_split=0.20,
+                        validation_split=eval_split,
                         shuffle=True,
                         verbose=1)
 
     results = model.evaluate(test_x, test_y)
 
     outputs = model.predict(test_x)
-    predicted = np.argmax(outputs, axis=1)
-    print('MODEL: {}, prediction: {}'.format(category, predicted))
-    print(predicted)
+    predicted = np.round(outputs).reshape(len(outputs)).astype(int)
+    print('MODEL: {}, outputs: {}'.format(category, outputs))
+    print('MODEL: {}, predicted: {}'.format(category, predicted))
 
     end = timeit.default_timer()
 
@@ -59,7 +61,9 @@ def train_category(category,
 
 
 def train_by_columns(data_file, voc_file, model_dir, glove_dir,
-                     epoch, batch_size, split_fraction, embedding_dim):
+                     epoch, batch_size,
+                     train_split, eval_split,
+                     embedding_dim):
     print('training: data = {}, voc = {}, '
           'epochs = {}, batch size = {}, '
           'glove dir = {}, embedding dim = {} ---> models = {}'.format(data_file, voc_file,
@@ -68,7 +72,7 @@ def train_by_columns(data_file, voc_file, model_dir, glove_dir,
                                                                        model_dir))
 
     train_x, train_y, test_x, test_y = data_process.load_data(
-        data_file, split_fraction)
+        data_file, train_split)
     vocab = data_process.load_vocab(voc_file)
 
     max_seq = train_x.shape[1]
@@ -85,6 +89,7 @@ def train_by_columns(data_file, voc_file, model_dir, glove_dir,
                                train_x, train_y.iloc[:, i],
                                test_x, test_y.iloc[:, i],
                                embedding_layers,
+                               eval_split,
                                epoch, batch_size)
 
         model.save(os.path.join(model_dir,
@@ -106,10 +111,14 @@ def real_main():
                           help="specify directory of Glove")
 
     ml_group = ap.add_argument_group('learning parameters')
-    ml_group.add_argument("-sf", "--split-fraction", required=False,
+    ml_group.add_argument("-ts", "--train-split", required=False,
                           type=float,
-                          default=DEFAULT_SPLIT_FRACTION,
-                          help="specify split fraction of train set and test set")
+                          default=DEFAULT_TRAIN_FRACTION,
+                          help="specify split fraction of train set")
+    ml_group.add_argument("-es", "--eval-split", required=False,
+                          type=float,
+                          default=DEFAULT_EVAL_FRACTION,
+                          help="specify split fraction of evaluate set in each epoch")
     ml_group.add_argument("-ep", "--epoch", required=False,
                           type=int,
                           default=DEFAULT_EPOCHS,
@@ -135,7 +144,8 @@ def real_main():
                      args.glove_dir,
                      args.epoch,
                      args.batch_size,
-                     args.split_fraction,
+                     args.train_split,
+                     args.eval_split,
                      args.embedding_dim)
 
 
