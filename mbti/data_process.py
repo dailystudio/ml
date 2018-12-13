@@ -11,12 +11,12 @@ MAX_NB_WORDS = 2000
 DEFAULT_MAX_SEQ = 512
 
 DATA_FILE_NAME_TEMPLATE = 'data_seq_{}.csv'
-VOC_FILE_NAME = 'voc.npy'
+VOC_FILE_NAME_TEMPLATE = 'voc_seq_{}.npy'
 
 
 class LabelTranslator:
-    titles = ["Extraversion (E) - Introversion (I)",
-              "Sensation (S) - INtuition (N)",
+    titles = ["Extroversion (E) - Introversion (I)",
+              "Sensation (S) - Nutation (N)",
               "Thinking (T) - Feeling (F)",
               "Judgement (J) - Perception (P)"
               ]
@@ -94,7 +94,7 @@ def pre_process_with_glove(labels, posts, seq_max=0):
 
 def pre_process_data(input_data_file, output_data_dir, seq_max):
     data_file = os.path.join(output_data_dir, DATA_FILE_NAME_TEMPLATE.format(seq_max))
-    voc_file = os.path.join(output_data_dir, VOC_FILE_NAME)
+    voc_file = os.path.join(output_data_dir, VOC_FILE_NAME_TEMPLATE.format(seq_max))
 
     print('data processing: input = {} --> data = {}, vocab = {}, sequence length = {}'.format(
         input_data_file, data_file, voc_file, seq_max))
