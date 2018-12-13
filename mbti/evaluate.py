@@ -97,19 +97,23 @@ def train_by_columns(data_file, voc_file, model_dir, glove_dir,
                                                                 epoch, embedding_dim)))
 
 
-def predict(input_file, model_dir, model_prefix):
-    print('predicting: input = {}, model = {}/{}_*.h5'.format(
-        input_file, model_dir, model_prefix))
-
-    params = model_prefix.split('_')
-    print('params: {}'.format(params))
-
-    seq_max = int(params[2])
-    print('seq_max: {}'.format(seq_max))
+def predict_file(input_file, model_dir, model_prefix):
+    print('predicting file: '.format(input_file))
 
     with open(input_file) as f:
         posts = f.readlines()
-    print('{} post to be predicted'.format(len(posts)))
+    print('{} post(s) in the file to be predicted'.format(len(posts)))
+
+    return predict(posts, model_dir, model_prefix)
+
+
+def predict(posts, model_dir, model_prefix):
+    print('predicting: {} post(s), model = {}/{}_*.h5'.format(
+        len(posts), model_dir, model_prefix))
+
+    params = model_prefix.split('_')
+    seq_max = int(params[2])
+    print('seq_max: {}'.format(seq_max))
 
     posts_data, _ = data_process.process_posts_with_glove(posts, seq_max)
     print('post data: {}'.format(posts_data))
@@ -124,9 +128,9 @@ def predict(input_file, model_dir, model_prefix):
                       metrics=['accuracy'])
 
         column_outputs = model.predict(posts_data)
-        column_predication = np.round(column_outputs).reshape(len(column_outputs)).astype(int)
-        print('column predicted{}: {}'.format(i, column_predication))
-        predictions.append(column_predication)
+        column_prediction = np.round(column_outputs).reshape(len(column_outputs)).astype(int)
+        print('column predicted{}: {}'.format(i, column_prediction))
+        predictions.append(column_prediction)
 
     outputs = np.asarray(predictions).T
     print('predictions: {}'.format(outputs))
@@ -137,8 +141,13 @@ def predict(input_file, model_dir, model_prefix):
 def real_main():
     ap = argparse.ArgumentParser()
 
-    ap.add_argument("-i", "--input-file", required=True,
-                    help="specify input data file")
+    input_group = ap.add_argument_group('input arguments')
+    group = input_group.add_mutually_exclusive_group(required=True)
+    group.add_argument("-f", "--input-file",
+                       help="specify input data file")
+    group.add_argument("-t", "--text",
+                       help="specify text of posts")
+
     ap.add_argument("-md", "--model-dir", required=True,
                     help="specify directory of trained models")
     ap.add_argument("-mp", "--model-prefix", required=True,
@@ -146,7 +155,10 @@ def real_main():
 
     args = ap.parse_args()
 
-    outputs = predict(args.input_file, args.model_dir, args.model_prefix)
+    if args.input_file is not None:
+        outputs = predict_file(args.input_file, args.model_dir, args.model_prefix)
+    else:
+        outputs = predict([args.text], args.model_dir, args.model_prefix)
 
     print('results: {}'.format(data_process.translate_label_codes(outputs)))
 
