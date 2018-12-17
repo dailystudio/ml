@@ -1,11 +1,13 @@
 import os
 import argparse
+import re
+
 import numpy as np
 import pandas as pd
 from keras_preprocessing.sequence import pad_sequences
 from keras_preprocessing.text import Tokenizer
 from tensorflow import keras
-import utils
+
 
 MAX_NB_WORDS = 2000
 DEFAULT_MAX_SEQ = 512
@@ -64,8 +66,42 @@ def translate_label_codes(codes):
     return encoder.decode_all(codes)
 
 
+# Function to clean data ... will be useful later
+def post_cleaner(post):
+    """cleans individual posts`.
+    Args:
+        post-string
+    Returns:
+         cleaned up post`.
+    """
+    # Covert all uppercase characters to lower case
+    post = post.lower()
+
+    # Remove |||
+    post = post.replace('|||', " ")
+
+    # Remove URLs, links etc
+    post = re.sub(
+        r'''(?i)\b((?:https?://|www\d{0,3}[.]|[a-z0-9.\-]+[.][a-z]{2,4}/)(?:[^\s()<>]+|\(([^\s()<>]+|(\([^\s()<>]+\)))*\))+(?:\(([^\s()<>]+|(\([^\s()<>]+\)))*\)|[^\s`!()\[\]{};:'".,<>?«»“”‘’]))''',
+        '', post, flags=re.MULTILINE)
+    # This would have removed most of the links but probably not all
+
+    # Remove puntuations
+    puncs1 = ['@', '#', '$', '%', '^', '&', '*', '(', ')', '-', '_', '+', '=', '{', '}', '[', ']', '|', '\\', '"', "'",
+              ';', ':', '<', '>', '/']
+    for punc in puncs1:
+        post = post.replace(punc, '')
+
+    puncs2 = [',', '.', '?', '!', '\n']
+    for punc in puncs2:
+        post = post.replace(punc, ' ')
+        # Remove extra white spaces
+    post = re.sub('\s+', ' ', post).strip()
+    return post
+
+
 def process_posts_with_glove(posts, max_seq_len=DEFAULT_MAX_SEQ):
-    posts_text = [utils.post_cleaner(post) for post in posts]
+    posts_text = [post_cleaner(post) for post in posts]
 
     tokenizer = Tokenizer(num_words=MAX_NB_WORDS)
     tokenizer.fit_on_texts(posts_text)
