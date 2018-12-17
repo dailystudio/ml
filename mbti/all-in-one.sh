@@ -58,7 +58,7 @@ function download_and_unzip() {
     if [ "$(uname)" == "Darwin" ]; then
       UNZIP="tar -C $target_dir/ -xf"
     else
-      UNZIP="unzip -nq"
+      UNZIP="unzip -d $target_dir/ -nq"
     fi
 
     echo "Unpacking required data files into [$target_dir] ..."
