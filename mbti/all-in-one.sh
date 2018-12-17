@@ -1,3 +1,5 @@
+#/bin/sh
+
 GLOVE_6B_URL="https://nlp.stanford.edu/data/wordvecs/glove.6B.zip"
 GLOVE_6B_FILE_NAME="glove.6B.zip"
 GLOVE_6B_MD5="373bba25d7289cf2b26837bfc428843a"
