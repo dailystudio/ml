@@ -5,10 +5,14 @@ GLOVE_6B_DIR="glove6b"
 
 INPUT_FILE="input/mbti_1.csv"
 DATA_SEQ=512
+EPOCH=10
+EMBEDDING_DIM=300
 DATA_FILE="data_seq_$DATA_SEQ.csv"
 VOC_FILE="voc_seq_$DATA_SEQ.npy"
 
 MODEL_DIR="models"
+MODEL_PREFIX="model_seq_""$DATA_SEQ""_epoch_""$EPOCH""_embedding_""$EMBEDDING_DIM"
+
 
 function download_and_unzip() {
     local data_dir=${1}
@@ -67,18 +71,32 @@ function download_and_unzip() {
     echo ""
 }
 
+function download_data() {
+    local data_dir=${1}
+
+    echo "STEP 1: Downloading data to [$data_dir] ..."
+    download_and_unzip $data_dir $GLOVE_6B_URL $GLOVE_6B_FILE_NAME $GLOVE_6B_MD5 $GLOVE_6B_DIR
+}
+
 function pre_process_data() {
     local data_dir=${1}
 
-    echo "Pre-processing data to [$data_dir] ..."
+    echo "STEP 2: Pre-processing data to [$data_dir] ..."
     python -u data_process.py -i input/mbti_1.csv -o $data_dir -m $DATA_SEQ
 }
 
 function train() {
     local data_dir=${1}
 
-    echo "Training data from [$data_dir] ..."
-    python -u train.py -d $data_dir/$DATA_FILE -v $data_dir/$VOC_FILE -m $MODEL_DIR -g $data_dir/$GLOVE_6B_DIR
+    echo "STEP 3: Training data from [$data_dir] ..."
+    python -u train.py -d $data_dir/$DATA_FILE \
+        -v $data_dir/$VOC_FILE -m $MODEL_DIR -g $data_dir/$GLOVE_6B_DIR \
+        -ep $EPOCH -ed $EMBEDDING_DIM
+}
+
+function predict() {
+    echo "STEP 4: Predicting with model(s) in [$MODEL_DIR], with prefix [$MODEL_PREFIX] ..."
+    python -u predict.py -t "Come on!" -md $MODEL_DIR -mp $MODEL_PREFIX
 }
 
 if [ -z "$1" ]; then
@@ -92,9 +110,11 @@ if [ ! -d "$data_dir" ]; then
     mkdir -p $data_dir
 fi
 
-download_and_unzip $data_dir $GLOVE_6B_URL $GLOVE_6B_FILE_NAME $GLOVE_6B_MD5 $GLOVE_6B_DIR
+download_data $data_dir
 
 pre_process_data $data_dir
 
 train $data_dir
+
+predict
 
