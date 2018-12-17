@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/bash
 
 GLOVE_6B_URL="https://nlp.stanford.edu/data/wordvecs/glove.6B.zip"
 GLOVE_6B_FILE_NAME="glove.6B.zip"
@@ -83,7 +83,7 @@ function download_data() {
 function pre_process_data() {
     local data_dir=${1}
 
-    echo "STEP 2: Pre-processing data to [$data_dir] ..."
+    echo "STEP 2: Pre-processing data in [$data_dir] ..."
     python -u data_process.py -i input/mbti_1.csv -o $data_dir -m $DATA_SEQ
 }
 
