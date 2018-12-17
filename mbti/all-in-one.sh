@@ -51,7 +51,7 @@ function download_and_unzip() {
 
     target_dir=$data_dir/$sub_dir
     if [ ! -d "$target_dir" ]; then
-        echo "Creating sub data directory [$target_dart] ..."
+        echo "Creating sub data directory [$target_dir] ..."
         mkdir -p $target_dir
     fi
 
