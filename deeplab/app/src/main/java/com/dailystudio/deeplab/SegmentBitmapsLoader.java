@@ -14,6 +14,7 @@ import android.text.TextUtils;
 
 import com.dailystudio.app.loader.AbsAsyncDataLoader;
 import com.dailystudio.app.utils.BitmapUtils;
+import com.dailystudio.deeplab.ml.DeeplabInterface;
 import com.dailystudio.deeplab.ml.DeeplabModel;
 import com.dailystudio.deeplab.ml.ImageUtils;
 import com.dailystudio.deeplab.utils.FilePickUtils;
@@ -51,6 +52,8 @@ public class SegmentBitmapsLoader extends AbsAsyncDataLoader<List<SegmentBitmap>
             return null;
         }
 
+        DeeplabInterface deeplabInterface = DeeplabModel.getInstance();
+
         final String filePath = FilePickUtils.getPath(context, mImageUri);
         Logger.debug("file to mask: %s", filePath);
         if (TextUtils.isEmpty(filePath)) {
@@ -80,7 +83,7 @@ public class SegmentBitmapsLoader extends AbsAsyncDataLoader<List<SegmentBitmap>
 
         EventBus.getDefault().post(new ImageDimenEvent(mImageUri, w, h));
 
-        float resizeRatio = (float) DeeplabModel.INPUT_SIZE / Math.max(bitmap.getWidth(), bitmap.getHeight());
+        float resizeRatio = (float) deeplabInterface.getInputSize() / Math.max(bitmap.getWidth(), bitmap.getHeight());
         int rw = Math.round(w * resizeRatio);
         int rh = Math.round(h * resizeRatio);
 
@@ -89,7 +92,7 @@ public class SegmentBitmapsLoader extends AbsAsyncDataLoader<List<SegmentBitmap>
 
         Bitmap resized = ImageUtils.tfResizeBilinear(bitmap, rw, rh);
 
-        Bitmap mask = DeeplabModel.segment(resized);
+        Bitmap mask = deeplabInterface.segment(resized);
         if (mask != null) {
             mask = BitmapUtils.scaleBitmap(mask, w, h);
             bitmaps.add(new SegmentBitmap(R.string.label_mask, mask));

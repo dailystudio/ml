@@ -1,16 +1,9 @@
 package com.dailystudio.deeplab;
 
 import android.Manifest;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.ColorStateList;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffXfermode;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
@@ -20,17 +13,12 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.text.TextUtils;
 import android.view.View;
-import android.widget.ImageView;
 
 import com.dailystudio.app.activity.ActionBarFragmentActivity;
 import com.dailystudio.app.utils.ActivityLauncher;
 import com.dailystudio.app.utils.ArrayUtils;
-import com.dailystudio.app.utils.BitmapUtils;
 import com.dailystudio.deeplab.ml.DeeplabModel;
-import com.dailystudio.deeplab.ml.ImageUtils;
-import com.dailystudio.deeplab.utils.FilePickUtils;
 import com.dailystudio.development.Logger;
 
 public class MainActivity extends ActionBarFragmentActivity {
@@ -42,7 +30,8 @@ public class MainActivity extends ActionBarFragmentActivity {
 
         @Override
         protected Boolean doInBackground(Void... voids) {
-            final boolean ret = DeeplabModel.initialize();
+            final boolean ret = DeeplabModel.getInstance().initialize(
+                    getApplicationContext());
             Logger.debug("initialize deeplab model: %s", ret);
 
             return ret;
@@ -110,7 +99,7 @@ public class MainActivity extends ActionBarFragmentActivity {
         final boolean granted = checkRequiredPermissions(requestIfNeed);
 
         setPickImageEnabled(granted);
-        if (granted && !DeeplabModel.isInitialized()) {
+        if (granted && !DeeplabModel.getInstance().isInitialized()) {
             initModel();
         }
     }

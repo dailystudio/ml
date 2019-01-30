@@ -79,6 +79,7 @@ dependencies {
     implementation "org.greenrobot:eventbus:${project.ext.eventBusVersion}"
 
     implementation "org.tensorflow:tensorflow-android:${project.ext.tfVersion}"
+    implementation 'org.tensorflow:tensorflow-lite:0.0.0-gpu-experimental'
 
     annotationProcessor 'com.google.auto.value:auto-value:1.1'
 }
