@@ -2,7 +2,7 @@ package com.dailystudio.deeplab.ml;
 
 public class DeeplabModel {
 
-    private final static Boolean USE_GPU = false;
+    private final static Boolean USE_GPU = true;
 
     private static DeeplabInterface sInterface = null;
 

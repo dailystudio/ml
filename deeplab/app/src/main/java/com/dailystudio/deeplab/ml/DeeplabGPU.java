@@ -7,11 +7,11 @@ import android.graphics.Color;
 import android.text.TextUtils;
 
 import com.dailystudio.app.utils.ArrayUtils;
+import com.dailystudio.app.utils.BitmapUtils;
 import com.dailystudio.development.Logger;
 
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.Tensor;
-import org.tensorflow.lite.experimental.GpuDelegate;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -19,19 +19,26 @@ import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.nio.MappedByteBuffer;
 import java.nio.channels.FileChannel;
+import java.util.Arrays;
+import java.util.Random;
 
 public class DeeplabGPU implements DeeplabInterface{
 
     private final static String MODEL_PATH = "deeplabv3_257_mv_gpu.tflite";
+
     private static final float IMAGE_MEAN = 128.0f;
     private static final float IMAGE_STD = 128.0f;
+    private final static int INPUT_SIZE = 257;
+    private final static int NUM_CLASSES = 21;
 
     private volatile Interpreter sTfInterpreter = null;
 
-    private final static String INPUT_NAME = "ImageTensor";
-    private final static String OUTPUT_NAME = "SemanticPredictions";
 
-    public final static int INPUT_SIZE = 257;
+    private ByteBuffer mImageData;
+    private int[][] mSegmentBits;
+    private int[] mSegmentColors;
+
+    private final static Random RANDOM = new Random(System.currentTimeMillis());
 
     @Override
     public boolean initialize(Context context) {
@@ -44,13 +51,33 @@ public class DeeplabGPU implements DeeplabInterface{
             return false;
         }
 
-        GpuDelegate delegate = new GpuDelegate();
-        Interpreter.Options options = (new Interpreter.Options()).addDelegate(delegate);
+        Interpreter.Options options = new Interpreter.Options();
+
+//        GpuDelegate delegate = new GpuDelegate();
+//        options.addDelegate(delegate);
 
         sTfInterpreter = new Interpreter(buffer, options);
 
         debugInputs(sTfInterpreter);
         debugOutputs(sTfInterpreter);
+
+        mImageData =
+                ByteBuffer.allocateDirect(
+                        1 * INPUT_SIZE * INPUT_SIZE * 3 * 4);
+        mImageData.order(ByteOrder.nativeOrder());
+
+        mSegmentBits = new int[INPUT_SIZE][INPUT_SIZE];
+        mSegmentColors = new int[NUM_CLASSES];
+        for (int i = 0; i < NUM_CLASSES; i++) {
+            if (i == 0) {
+                mSegmentColors[i] = Color.TRANSPARENT;
+            } else {
+                mSegmentColors[i] = Color.rgb(
+                        (int)(255 * RANDOM.nextFloat()),
+                        (int)(255 * RANDOM.nextFloat()),
+                        (int)(255 * RANDOM.nextFloat()));
+            }
+        }
 
         return (sTfInterpreter != null);
     }
@@ -66,7 +93,7 @@ public class DeeplabGPU implements DeeplabInterface{
     }
 
     @Override
-    public Bitmap segment(final Bitmap bitmap) {
+    public Bitmap segment(Bitmap bitmap) {
         if (sTfInterpreter == null) {
             Logger.warn("tf model is NOT initialized.");
             return null;
@@ -76,8 +103,8 @@ public class DeeplabGPU implements DeeplabInterface{
             return null;
         }
 
-        final int w = bitmap.getWidth();
-        final int h = bitmap.getHeight();
+        int w = bitmap.getWidth();
+        int h = bitmap.getHeight();
         Logger.debug("bitmap: %d x %d,", w, h);
 
         if (w > INPUT_SIZE || h > INPUT_SIZE) {
@@ -88,52 +115,80 @@ public class DeeplabGPU implements DeeplabInterface{
             return null;
         }
 
-        ByteBuffer img =
-                ByteBuffer.allocateDirect(
-                        1 * INPUT_SIZE * INPUT_SIZE * 3 * 4);
-        img.order(ByteOrder.nativeOrder());
-        img.rewind();
+        if (w < INPUT_SIZE || h < INPUT_SIZE) {
+            bitmap = BitmapUtils.extendBitmap(
+                    bitmap, INPUT_SIZE, INPUT_SIZE, Color.BLACK);
+
+            w = bitmap.getWidth();
+            h = bitmap.getHeight();
+            Logger.debug("extend bitmap: %d x %d,", w, h);
+        }
+
+        mImageData.rewind();
 
         int[] mIntValues = new int[w * h];
-        byte[] mFlatIntValues = new byte[w * h * 3];
-        int[] mOutputs = new int[w * h];
+        float[][][][] mOutputs = new float[1][w][h][21];
 
         bitmap.getPixels(mIntValues, 0, w, 0, 0, w, h);
 
         int pixel = 0;
         for (int i = 0; i < INPUT_SIZE; ++i) {
             for (int j = 0; j < INPUT_SIZE; ++j) {
+                if (pixel >= mIntValues.length) {
+                    break;
+                }
+
                 final int val = mIntValues[pixel++];
-                img.putFloat((((val >> 16) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
-                img.putFloat((((val >> 8) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
-                img.putFloat(((val & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
+                mImageData.putFloat((((val >> 16) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
+                mImageData.putFloat((((val >> 8) & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
+                mImageData.putFloat(((val & 0xFF) - IMAGE_MEAN) / IMAGE_STD);
             }
         }
-//        for (int i = 0; i < mIntValues.length; ++i) {
-//            final int val = mIntValues[i];
-//            mFlatIntValues[i * 3 + 0] = (byte)((val >> 16) & 0xFF);
-//            mFlatIntValues[i * 3 + 1] = (byte)((val >> 8) & 0xFF);
-//            mFlatIntValues[i * 3 + 2] = (byte)(val & 0xFF);
-//        }
 
         final long start = System.currentTimeMillis();
 
-        Logger.debug("start inference = %s", img);
-        sTfInterpreter.run(img, mOutputs);
+        Logger.debug("start inference = %s", mImageData);
+        sTfInterpreter.run(mImageData, mOutputs);
 
-        Logger.debug("inference done, outputs = %s", ArrayUtils.intArrayToString(mOutputs));
+//        Logger.debug("inference done, outputs = %s", ArrayUtils.floatArrayToString(mOutputs));
         final long end = System.currentTimeMillis();
         Logger.debug("%d millis per core segment call.", (end - start));
 
         Bitmap output = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888);
 
+        fillZeroes(mSegmentBits);
+        float maxVal = 0;
         for (int y = 0; y < h; y++) {
             for (int x = 0; x < w; x++) {
-                output.setPixel(x, y, mOutputs[y * w + x] == 0 ? Color.TRANSPARENT : Color.BLACK);
+                mSegmentBits[x][y] = 0;
+
+                for (int c = 0; c < NUM_CLASSES; c++) {
+                    if (c == 0 || mOutputs[0][y][x][c] > maxVal) {
+                        maxVal = mOutputs[0][y][x][c];
+                        mSegmentBits[x][y] = c;
+                    }
+                }
+
+                output.setPixel(x, y, mSegmentColors[mSegmentBits[x][y]]);
             }
+//            Logger.debug("segment map[%d]: %s",
+//                    y,
+//                    ArrayUtils.intArrayToString(segmap[y], ","));
         }
 
+
         return output;
+    }
+
+    private void fillZeroes(int[][] array) {
+        if (array == null) {
+            return;
+        }
+
+        int r;
+        for (r = 0; r < array.length; r++) {
+            Arrays.fill(array[r], 0);
+        }
     }
 
     private static void debugInputs(Interpreter interpreter) {

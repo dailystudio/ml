@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -94,6 +95,10 @@ public class SegmentBitmapsLoader extends AbsAsyncDataLoader<List<SegmentBitmap>
 
         Bitmap mask = deeplabInterface.segment(resized);
         if (mask != null) {
+            mask = BitmapUtils.createClippedBitmap(mask,
+                    (mask.getWidth() - rw) / 2,
+                    (mask.getHeight() - rh) / 2,
+                    rw, rh);
             mask = BitmapUtils.scaleBitmap(mask, w, h);
             bitmaps.add(new SegmentBitmap(R.string.label_mask, mask));
 
