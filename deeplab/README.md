@@ -20,7 +20,7 @@ Don't worry, if you cannot download the original one from the link above, I have
 ## Running the demo
 
 Compare to Tensorflow Mobile version, the TFLite model has smaller size. TF Mobile model is about 8.4 MB, while the Lite version is only 2.4 MB. I include the model inside apk, so running the demo becomes much easier than before. Import the source codes to your Android Studio IDE, and Run. You will see the demo. Here is a short video for the demo.
-<img src=".github/deeplab_demo.gif" width="280" height="498" alt="DeepLab Demo"/>
+<img src=".github/deeplab_demo_lite_version.gif" width="280" height="498" alt="DeepLab Demo"/>
 
 ## Surfing the code
 [DeeplabModel](app/src/main/java/com/dailystudio/deeplab/ml/DeepLabModel.java) provides an implementation fetcher of DeepLab interfaces, which can easily switch between Tensorflow Lite and Tensorflow Mobile.
