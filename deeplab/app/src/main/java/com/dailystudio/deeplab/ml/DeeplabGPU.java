@@ -23,7 +23,7 @@ import java.nio.channels.FileChannel;
 import java.util.Arrays;
 import java.util.Random;
 
-public class DeeplabGPU implements DeeplabInterface{
+public class DeeplabGPU implements DeeplabInterface {
 
     private final static String MODEL_PATH = "deeplabv3_257_mv_gpu.tflite";
 

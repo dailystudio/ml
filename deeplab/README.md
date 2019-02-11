@@ -15,19 +15,11 @@ According to the [TensorFlow Lite GPU Delegate Tutorial](https://www.tensorflow.
 Here is a download shortcut:
 [DeepLab segmentation (257x257)](https://storage.googleapis.com/download.tensorflow.org/models/tflite/gpu/deeplabv3_257_mv_gpu.tflite)
 
-Don't worry, if you cannot download the original one from the link above, I have already included one the source codes. It is placed under app/src/main/assets/
+Don't worry, if you cannot download the original one from the link above, I have already included one the source codes. It is placed under directory [app/src/main/assets/](app/src/main/assets/).
 
 # Running the demo
 
-1. Push the model to the device:
-```bash
-adb shell mkdir /sdcard/deeplab/
-adb push frozen_inference_graph.pb /sdcard/deeplab/
-```
-Anyway, the final inference model should be here:
-> /sdcard/deeplab/frozen_inference_graph.pb
-
-2. Run the demo, here is demo screen recording.
+Compare to Tensorflow Mobile version, the TFLite model has smaller size. TF Mobile model is about 8.4 MB, while the Lite version is only 2.4 MB. I include the model inside apk, so running the demo becomes much easier than before. Import the source codes to your Android Studio IDE, and Run. You will see the demo. Here is a short video for the demo.
 <img src=".github/deeplab_demo.gif" width="280" height="498" alt="DeepLab Demo"/>
 
 ## License
