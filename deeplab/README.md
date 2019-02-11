@@ -1,4 +1,4 @@
-# DeepLab on Android
+# DeepLab on Android (TFLite with GPU)
 DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image. Here is the mobile version running on Android devices.
 
 ## Latest updates
