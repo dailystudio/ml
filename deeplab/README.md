@@ -23,8 +23,8 @@ Compare to Tensorflow Mobile version, the TFLite model has smaller size. TF Mobi
 <img src=".github/deeplab_demo_lite_version.gif" width="280" height="498" alt="DeepLab Demo"/>
 
 ## A bit more about codes
-To be compatible with original codes with Tensorflow Mobile, I have refactoring the codes.
-I created a class named [DeeplabModel](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabModel.java), which provides an implementation switch between Tensorflow Lite and Tensorflow Mobile.
+To be compatible with original codes with Tensorflow Mobile, I have refactored the codes.
+I created a delegate named [DeeplabModel](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabModel.java), which provides implementation both for Tensorflow Lite and Tensorflow Mobile.
 ```java
 public class DeeplabModel {
 
@@ -48,7 +48,38 @@ public class DeeplabModel {
 
 }
 ```
-> As shown above, changing the value of static variable **USE_TF_LITE** will easily switch the implementation between Tensorflow Lite and Tensorflow Mobile.
+> Changing the value of static variable **USE_TF_LITE** can easily switch the implementation between Tensorflow Lite and Tensorflow Mobile.
+
+[DeeplabInterface](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabInterface.java)  provides unified interfaces of DeepLab model which can smoothly integrated with high level application with any exposure of low level implementation details.
+
+
+```java
+public interface DeeplabInterface {
+
+    boolean initialize(Context context);
+
+    boolean isInitialized();
+
+    int getInputSize();
+
+    Bitmap segment(Bitmap bitmap);
+
+}
+```
+[DeeplabMobile](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabMobile.java) and  [DeeplabLite](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabLite.java) are two diversities of [DeeplabInterface](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabInterface.java) implementation, which base on Tensorflow Mobile and Tensorflow Lite accordingly.
+- [DeeplabMobile](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabMobile.java) is an implementation with Tensorflow Mobile (deprecated), for more details, please refer to old README documentation [here](doc/README_OLD.md).
+- [DeeplabLite](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabLite.java) is an implementation with GPU preview version of Tensorflow Lite. The implementation will use GPU as default.
+```java
+	Interpreter.Options options = new Interpreter.Options();
+
+	if (USE_GPU) {
+		GpuDelegate delegate = new GpuDelegate();
+        options.addDelegate(delegate);
+    }
+
+	Interpreter interpreter = new Interpreter(mModelBuffer, options);
+```
+> Changing the value of static variable **USE_GPU** can enable or disable GPU support in Tensorflow Lite.
 
 ## License
 

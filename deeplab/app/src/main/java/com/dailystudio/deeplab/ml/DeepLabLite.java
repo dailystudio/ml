@@ -26,6 +26,7 @@ import java.util.Random;
 public class DeepLabLite implements DeeplabInterface {
 
     private final static String MODEL_PATH = "deeplabv3_257_mv_gpu.tflite";
+    private final static boolean USE_GPU = false;
 
     private static final float IMAGE_MEAN = 128.0f;
     private static final float IMAGE_STD = 128.0f;
@@ -143,10 +144,10 @@ public class DeepLabLite implements DeeplabInterface {
 
         Interpreter.Options options = new Interpreter.Options();
 
-        GpuDelegate delegate = new GpuDelegate();
-        options.addDelegate(delegate);
-        options.setNumThreads(1);
-        options.setAllowFp16PrecisionForFp32(true);
+        if (USE_GPU) {
+            GpuDelegate delegate = new GpuDelegate();
+            options.addDelegate(delegate);
+        }
 
         Interpreter interpreter = new Interpreter(mModelBuffer, options);
 
