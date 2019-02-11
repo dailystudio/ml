@@ -1,10 +1,10 @@
 # DeepLab on Android
-DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image. Here is mobile version running on Android devices.
+DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image. Here is the mobile version running on Android devices.
 
 # Latest updates
-Tensorflow Lite annouced a preview version with GPU support, you can read [TensorFlow Lite GPU Delegate Tutorial](https://www.tensorflow.org/lite/performance/gpu) for further information.
+Tensorflow Lite announced a preview version with GPU support, you can read [TensorFlow Lite GPU Delegate Tutorial](https://www.tensorflow.org/lite/performance/gpu) for further information.
 
-Along with this preview release, it also published a set of pre-trained models for testing the performance. These models include a DeepLab tflite model.
+Along with this preview release, it also published a set of pre-trained models for testing the performance. These models include a DeepLab TFLite model.
 
 Due to Tensorflow mobile is deprecated. The latest code of this repository will use Tensorflow Lite instead of Tensorflow Mobile. The following parts of this document will explain a bit more about this new Tensorflow Lite version. Tensorflow Mobile related content is archived [here](doc/README_OLD.md).
 
@@ -15,11 +15,11 @@ According to the [TensorFlow Lite GPU Delegate Tutorial](https://www.tensorflow.
 Here is a download shortcut:
 [DeepLab segmentation (257x257)](https://storage.googleapis.com/download.tensorflow.org/models/tflite/gpu/deeplabv3_257_mv_gpu.tflite)
 
-Don't worry, if you cannot download the original one from the link above, I have already included one the source codes. It is placed under directory [app/src/main/assets/](app/src/main/assets/).
+Don't worry, if you cannot download the original one from the link above, I have already included on the source codes. It is placed under directory [app/src/main/assets/](app/src/main/assets/).
 
 ## Running the demo
 
-Compare to Tensorflow Mobile version, the TFLite model has smaller size. TF Mobile model is about 8.4 MB, while the Lite version is only 2.4 MB. I include the model inside apk, so running the demo becomes much easier than before. Import the source codes to your Android Studio IDE, and Run. You will see the demo. Here is a short video for the demo.
+Compare to the Tensorflow Mobile version, the TFLite model has a smaller size. TF Mobile model is about 8.4 MB, while the Lite version is only 2.4 MB. I include the model inside apk, so running the demo becomes much easier than before. Import the source codes to your Android Studio IDE, and Run. You will see the demo. Here is a short video for the demo.
 <img src=".github/deeplab_demo_lite_version.gif" width="280" height="498" alt="DeepLab Demo"/>
 
 ## A bit more about codes
@@ -50,7 +50,7 @@ public class DeeplabModel {
 ```
 > Changing the value of static variable **USE_TF_LITE** can easily switch the implementation between Tensorflow Lite and Tensorflow Mobile.
 
-[DeeplabInterface](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabInterface.java)  provides unified interfaces of DeepLab model which can smoothly integrated with high level application with any exposure of low level implementation details.
+[DeeplabInterface](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabInterface.java)  provides unified interfaces of the DeepLab model which can smoothly be integrated with the high-level application with any exposure of low-level implementation details.
 
 
 ```java
@@ -70,26 +70,26 @@ public interface DeeplabInterface {
 - [DeeplabMobile](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabMobile.java) is an implementation with Tensorflow Mobile (deprecated), for more details, please refer to old README documentation [here](doc/README_OLD.md).
 - [DeeplabLite](app/src/main/java/com/dailystudio/deeplab/ml/DeeplabLite.java) is an implementation with GPU preview version of Tensorflow Lite. The implementation will use GPU as default.
 ```java
-	Interpreter.Options options = new Interpreter.Options();
+    Interpreter.Options options = new Interpreter.Options();
 
-	if (USE_GPU) {
-		GpuDelegate delegate = new GpuDelegate();
-		options.addDelegate(delegate);
-	}
+    if (USE_GPU) {
+        GpuDelegate delegate = new GpuDelegate();
+        options.addDelegate(delegate);
+    }
 
-	Interpreter interpreter = new Interpreter(mModelBuffer, options);
+    Interpreter interpreter = new Interpreter(mModelBuffer, options);
 ```
 > Changing the value of static variable **USE_GPU** can enable or disable GPU support in Tensorflow Lite.
 
 ## Issues
-Currently GPU preview version of Tensorflow Lite has an issue that creating Interpreter and calling interpreter.run() should happen in the same thread. Otherwise, it will be blocked the thread.
+Currently, the GPU preview version of Tensorflow Lite has an issue that creating Interpreter and calling interpreter.run() should happen in the same thread. Otherwise, it will be blocked the thread.
 
 ## Performance
-Here is a quick performance analyses of DeepLab models on several devices.
+Here is a quick performance analysis of DeepLab models on several devices.
 - **TF Mobile model** with 513 x 513 inputs
 - **TF Lite model** with 257 x 257 inputs
 
-It is tested with same 10 pictures. The result is an average of the time elapses during **interpreter.run()** calling.
+It is tested with the same 10 pictures. The result is an average of the time elapses during **interpreter.run()** calling.
 
 Tests (in ms.)        | OnePlus 3T   | OnePlus 5 | Pixel 2 XL
 :------               | :------      | :------   | :------
