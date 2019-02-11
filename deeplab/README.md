@@ -1,61 +1,21 @@
 # DeepLab on Android
 DeepLab is a state-of-art deep learning model for semantic image segmentation, where the goal is to assign semantic labels (e.g., person, dog, cat and so on) to every pixel in the input image. Here is mobile version running on Android devices.
 
+# Latest updates
+Tensorflow Lite annouced a preview version with GPU support, you can read [TensorFlow Lite GPU Delegate Tutorial](https://www.tensorflow.org/lite/performance/gpu) for further information.
 
-## Preparing the models
+Along with this preview release, it also published a set of pre-trained models for testing the performance. These models include a DeepLab tflite model.
 
-Before running the demo on Android device, you need to prepare a DeepLab inference model for mobile device.
+Due to Tensorflow mobile is deprecated. The latest code of this repository will use Tensorflow Lite instead of Tensorflow Mobile. The following parts of this document will explain a bit more about this new Tensorflow Lite version. Tensorflow Mobile related content is archived [here](doc/README_OLD.md).
 
-1. Clone the DeepLab model source code from TensorFlow modal repository:
-https://github.com/tensorflow/models/tree/master/research/deeplab
-```
-git clone https://github.com/tensorflow/models.git
-```
-2. Enter your repository directory and download pretrained checkpoints and graph from <a href='g3doc/model_zoo.md'>here</a>. Models are pretrained several datasets, including PASCAL VOC 2012,  Cityscapes, and  ADE20K. Download **MobileNet-v2** based models, like mobilenetv2_coco_voc_trainaug. Because it has smaller size and better performance. **Xception_65** based models cannot be loaded by TensorFlow Mobile inference engine. After the model is downloaded, unzip and put the files into directory model under **research/deeplab/**,  like this:
-```
-$ cd models/
-$ cd research/deeplab/
-$ mkdir -p model
-$ (... unzip the downloaded model file.. )
-$ ls -1 model/
-frozen_inference_graph.pb
-model.ckpt-30000.data-00000-of-00001
-model.ckpt-30000.index
-```
+## Downloading the TFlite model
 
-3. Modify one line of code of export model scriptto generate model for Tensorflow Mobile.
-```
-vim export_model.py
-```
-Modify **line 131** from
-```python
- semantic_predictions = tf.slice(
-         predictions[common.OUTPUT_TYPE],
-         [0, 0, 0],
-         [1, resized_image_size[0], resized_image_size[1]])
-```
-to
-```python
- semantic_predictions = tf.slice(
-         tf.cast(predictions[common.OUTPUT_TYPE], tf.int32),
-         [0, 0, 0],
-         [1, resized_image_size[0], resized_image_size[1]])
-```
-Changing this line is casting the INT64 Sclie Operation to INT32 Slice Operation. INT64 Sclie Operation is NOT supported on Android currently and it will cause a runtime exception during inference.
- 
-4. Export model with the command:
-``` bash
-python export_model.py \
-    --checkpoint_path model/model.ckpt-30000 \
-    --export_path ./frozen_inference_graph.pb \
-    --model_variant="mobilenet_v2" \
-    --num_classes=21 \
-    --crop_size=513 \
-    --crop_size=513 \
-    --inference_scales=1.0
-```
-A new generated frozen graph for TensorFlow Mobile is under current directory.
+According to the [TensorFlow Lite GPU Delegate Tutorial](https://www.tensorflow.org/lite/performance/gpu), with the release of the GPU delegate, they included a handful of models that can be run on the backend. You can download the DeepLab segmentation model which supports 257 x 257 inputs.
 
+Here is a download shortcut:
+[DeepLab segmentation (257x257)](https://storage.googleapis.com/download.tensorflow.org/models/tflite/gpu/deeplabv3_257_mv_gpu.tflite)
+
+Don't worry, if you cannot download the original one from the link above, I have already included one the source codes. It is placed under app/src/main/assets/
 
 # Running the demo
 
