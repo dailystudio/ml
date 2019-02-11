@@ -106,7 +106,8 @@ Original    | TF Mobile | TF Lite
 <img src=".github/sample_1_original.png" width="200" height="130" alt="Sample 1 Original"/> | <img src=".github/sample_1_tf_mobile.png" width="200" height="130" alt="Sample 1 TF Mobile"/> | <img src=".github/sample_1_tf_lite.png" width="200" height="130" alt="Sample 1 TF Lite"/>
 
 ## Issues
-Currently, the GPU preview version of Tensorflow Lite has an issue that creating Interpreter and calling interpreter.run() should happen in the same thread. Otherwise, it will be blocked the thread. Here is an issue to tracking this problem:
+Currently, the GPU preview version of Tensorflow Lite has an issue that creating Interpreter and calling interpreter.run() should happen in the same thread. Otherwise, it will be blocked the thread.
+Here is an issue to tracking this problem:
 https://github.com/tensorflow/tensorflow/issues/25657
 
 ## License
