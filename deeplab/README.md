@@ -101,8 +101,8 @@ And, here are the segmented results.
 
 Original    | TF Mobile | TF Lite
 :-------    | :-------  | :-------
-<img src=".github/sample_0_original.png" width="485" height="310" alt="Sample 0 Original"/> | <img src=".github/sample_0_tf_mobile.png" width="485" height="310" alt="Sample 0 TF Mobile"/> | <img src=".github/sample_0_tf_lite.png" width="485" height="310" alt="Sample 0 TF Lite"/>
-<img src=".github/sample_1_original.png" width="485" height="310" alt="Sample 1 Original"/> | <img src=".github/sample_1_tf_mobile.png" width="485" height="310" alt="Sample 1 TF Mobile"/> | <img src=".github/sample_1_tf_lite.png" width="485" height="310" alt="Sample 1 TF Lite"/>
+<img src=".github/sample_0_original.png" width="200" height="130" alt="Sample 0 Original"/> | <img src=".github/sample_0_tf_mobile.png" width="200" height="130" alt="Sample 0 TF Mobile"/> | <img src=".github/sample_0_tf_lite.png" width="200" height="130" alt="Sample 0 TF Lite"/>
+<img src=".github/sample_1_original.png" width="200" height="130" alt="Sample 1 Original"/> | <img src=".github/sample_1_tf_mobile.png" width="200" height="130" alt="Sample 1 TF Mobile"/> | <img src=".github/sample_1_tf_lite.png" width="200" height="130" alt="Sample 1 TF Lite"/>
 
 ## License
 
