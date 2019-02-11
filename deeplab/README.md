@@ -82,7 +82,8 @@ public interface DeeplabInterface {
 > Changing the value of static variable **USE_GPU** can enable or disable GPU support in Tensorflow Lite.
 
 ## Issues
-Currently, the GPU preview version of Tensorflow Lite has an issue that creating Interpreter and calling interpreter.run() should happen in the same thread. Otherwise, it will be blocked the thread.
+Currently, the GPU preview version of Tensorflow Lite has an issue that creating Interpreter and calling interpreter.run() should happen in the same thread. Otherwise, it will be blocked the thread. Here is an issue to tracking this problem:
+https://github.com/tensorflow/tensorflow/issues/25657
 
 ## Performance
 Here is a quick performance analysis of DeepLab models on several devices.
@@ -95,7 +96,7 @@ Tests (in ms.)        | OnePlus 3T   | OnePlus 5 | Pixel 2 XL
 :------               | :------      | :------   | :------
 TF Mobile             | 1096 ms      | 1166 ms   | 1237 ms
 TF Lite (disable GPU) | 173 ms       | 172 ms    | 124 ms
-TF Lite (enable) GPU) | 137 ms       | 133 ms    | 138 ms
+TF Lite (enable GPU)  | 137 ms       | 133 ms    | 138 ms
 
 And, here are the segmented results.
 
