@@ -74,12 +74,34 @@ public interface DeeplabInterface {
 
 	if (USE_GPU) {
 		GpuDelegate delegate = new GpuDelegate();
-        options.addDelegate(delegate);
-    }
+		options.addDelegate(delegate);
+	}
 
 	Interpreter interpreter = new Interpreter(mModelBuffer, options);
 ```
 > Changing the value of static variable **USE_GPU** can enable or disable GPU support in Tensorflow Lite.
+
+## Issues
+Currently GPU preview version of Tensorflow lite has an issue that creating Interpreter and interpreter.run() should be called from the same thread. Otherwise, it will be blocked.
+
+## Performance
+Here is a quick performance analyses of DeepLab models on several devices.
+- **TF Mobile model** with 513 x 513 inputs
+- **TF Lite model** with 257 x 257 inputs
+
+It is tested with same 10 pictures. The result is an average of the time elapses during **interpreter.run()** calling.
+
+Tests (in ms.)        | OnePlus 3T   | OnePlus 5 | Pixel 2 XL
+:------               | :------      | :------   | :------
+TF Mobile             | 1096 ms      | 1166 ms   | 1237 ms
+TF Lite (disable GPU) | 173 ms       | 172 ms    | 124 ms
+TF Lite (enable) GPU) | 137 ms       | 133 ms    | 138 ms
+
+And, here are the segmented results.
+Original    | TF Mobile | TF Lite
+:-------    | :-------  | :-------
+<img src=".github/sample_0_original.png" width="485" height="310" alt="Sample 0 Original"/> | <img src=".github/sample_0_mobile.png" width="485" height="310" alt="Sample 0 TF Mobile"/> | <img src=".github/sample_0_lite.png" width="485" height="310" alt="Sample 0 TF Lite"/>
+<img src=".github/sample_1_original.png" width="485" height="310" alt="Sample 1 Original"/> | <img src=".github/sample_1_mobile.png" width="485" height="310" alt="Sample 1 TF Mobile"/> | <img src=".github/sample_1_lite.png" width="485" height="310" alt="Sample 1 TF Lite"/>
 
 ## License
 
