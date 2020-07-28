@@ -4,6 +4,4 @@ This repository contains several machine learning models running on mobile devic
 
 ## Models
 
--   [deeplab](deeplab):  state-of-art deep learning model for semantic image segmentation (TFLite with GPU)
--   [object_detection](object_detection):  TensorFlow Lite model for object detection (official one from TensorFlow project)
-
+Please visit https://github.com/dailystudio/tensorflow-lite-examples-android for more available models on mobile devices.
